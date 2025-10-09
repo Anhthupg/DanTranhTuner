@@ -157,6 +157,12 @@
         .string-line {
             stroke: #000000;
             /* stroke-width set dynamically based on frequency */
+            transition: stroke 0.2s, opacity 0.2s;
+        }
+
+        .string-line:hover {
+            stroke: #008ECC;
+            opacity: 0.8;
         }
 
         .string-label {
@@ -168,6 +174,11 @@
             stroke: white;
             stroke-width: 0.8px;
             paint-order: stroke fill;
+            transition: fill 0.2s;
+        }
+
+        .string-label:hover {
+            fill: #008ECC;
         }
 
         .frequency-display {
@@ -298,7 +309,7 @@
         <header>
             <img src="assets/maml-logo.png" alt="MAML Logo" class="logo">
             <div class="header-text">
-                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.0.2</span></h1>
+                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.0.5</span></h1>
                 <p class="subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
             </div>
         </header>

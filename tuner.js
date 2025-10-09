@@ -160,6 +160,13 @@ class DanTranhTuner {
         this.isListening = false;
         this.animationFrame = null;
 
+        // Tone generator for playing reference pitches
+        this.toneContext = null;
+        this.toneOscillator = null;
+        this.toneGain = null;
+        this.currentFilter = null;
+        this.currentPlayingFreq = null;
+
         this.noteMap = new NoteFrequencyMap(440);
         this.strings = [];
         this.currentDetectedFreq = null;
@@ -219,6 +226,15 @@ class DanTranhTuner {
         this.initializeElements();
         this.attachEventListeners();
         this.generateStrings();
+
+        // Initialize tone generator on first user interaction
+        const initOnInteraction = () => {
+            this.initializeToneGenerator();
+            document.removeEventListener('click', initOnInteraction);
+            document.removeEventListener('touchstart', initOnInteraction);
+        };
+        document.addEventListener('click', initOnInteraction);
+        document.addEventListener('touchstart', initOnInteraction);
     }
 
     initializeElements() {
@@ -479,6 +495,12 @@ class DanTranhTuner {
             line.setAttribute('class', 'string-line');
             line.setAttribute('stroke-width', thickness);
             line.setAttribute('data-string-index', index);
+            line.style.cursor = 'pointer';
+
+            // Add click handler to play the string's tone
+            line.addEventListener('click', () => {
+                this.playTone(stringData.frequency);
+            });
 
             // String label (left side) - positioned 5px before the string starts
             const label = document.createElementNS(svgNS, 'text');
@@ -493,6 +515,12 @@ class DanTranhTuner {
                 ? `${index + 1}: ${stringData.note}${stringData.cents > 0 ? '+' : ''}${stringData.cents}`
                 : `${index + 1}: ${stringData.note}`;
             label.textContent = labelText;
+            label.style.cursor = 'pointer';
+
+            // Add click handler to label too
+            label.addEventListener('click', () => {
+                this.playTone(stringData.frequency);
+            });
 
             // Frequency display (right side)
             const freqDisplay = document.createElementNS(svgNS, 'text');
@@ -1085,6 +1113,145 @@ class DanTranhTuner {
     resetDisplays() {
         this.elements.detectedPitch.textContent = '--';
         this.elements.detectedFreq.textContent = '-- Hz';
+    }
+
+    initializeToneGenerator() {
+        if (this.toneContext) return; // Already initialized
+
+        try {
+            this.toneContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('Tone generator initialized');
+        } catch (error) {
+            console.error('Failed to initialize tone generator:', error);
+        }
+    }
+
+    playTone(frequency, duration = 10000) {
+        this.initializeToneGenerator();
+
+        if (!this.toneContext) {
+            console.error('Tone context not available');
+            return;
+        }
+
+        // Fade out any currently playing tone quickly (0.5s) when new string clicked
+        if (this.toneOscillator) {
+            this.stopTone(0.5);
+        }
+
+        try {
+            // Create a NEW gain node for this tone (allows smooth crossfade)
+            const toneGain = this.toneContext.createGain();
+            toneGain.connect(this.toneContext.destination);
+            toneGain.gain.value = 0; // Start silent
+
+            // Create custom bright tone with harmonics (like a bell/string instrument)
+            // Use triangle wave for clean brightness
+            const oscillator = this.toneContext.createOscillator();
+            oscillator.type = 'triangle'; // Bright but clean
+            oscillator.frequency.value = frequency;
+
+            // Create a filter for extra brightness
+            const filter = this.toneContext.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = frequency * 0.5; // Let through frequencies above half the fundamental
+            filter.Q.value = 0.7; // Gentle slope
+
+            // Connect: oscillator -> filter -> gain -> output
+            oscillator.connect(filter);
+            filter.connect(toneGain);
+
+            // Smooth envelope to avoid clicks
+            const now = this.toneContext.currentTime;
+            const attackTime = 0.01; // Very quick attack for brightness
+            const sustainTime = duration / 1000 - 1; // Sustain for most of duration
+            const releaseTime = 1; // 1 second release (gradual taper)
+
+            // Attack: quick fade in for bright sound
+            toneGain.gain.setValueAtTime(0, now);
+            toneGain.gain.linearRampToValueAtTime(0.3, now + attackTime);
+
+            // Sustain: hold at volume
+            toneGain.gain.setValueAtTime(0.3, now + attackTime + sustainTime);
+
+            // Release: gradual taper down over 1 second
+            toneGain.gain.linearRampToValueAtTime(0, now + attackTime + sustainTime + releaseTime);
+
+            // Start the oscillator
+            oscillator.start(now);
+
+            // Stop after full duration
+            oscillator.stop(now + attackTime + sustainTime + releaseTime);
+
+            // Store references for stopping
+            this.toneOscillator = oscillator;
+            this.toneGain = toneGain;
+            this.currentFilter = filter;
+            this.currentPlayingFreq = frequency;
+
+            // Clean up when done
+            oscillator.onended = () => {
+                filter.disconnect();
+                toneGain.disconnect();
+
+                // Only clear if this is still the current oscillator
+                if (this.toneOscillator === oscillator) {
+                    this.toneOscillator = null;
+                    this.toneGain = null;
+                    this.currentFilter = null;
+                    this.currentPlayingFreq = null;
+                }
+            };
+
+            console.log(`Playing bright tone: ${frequency.toFixed(2)} Hz for ${duration/1000}s`);
+        } catch (error) {
+            console.error('Error playing tone:', error);
+        }
+    }
+
+    stopTone(fadeTime = 0.5) {
+        if (this.toneOscillator) {
+            // Store references locally before clearing instance variables
+            const oldOscillator = this.toneOscillator;
+            const oldGain = this.toneGain;
+            const oldFilter = this.currentFilter;
+
+            // Clear instance variables immediately so new tone can start
+            this.toneOscillator = null;
+            this.toneGain = null;
+            this.currentFilter = null;
+            this.currentPlayingFreq = null;
+
+            try {
+                const now = this.toneContext.currentTime;
+
+                // Cancel any scheduled changes and fade out smoothly
+                oldGain.gain.cancelScheduledValues(now);
+                oldGain.gain.setValueAtTime(oldGain.gain.value, now);
+                oldGain.gain.linearRampToValueAtTime(0, now + fadeTime);
+
+                // Schedule oscillator to stop after fade
+                oldOscillator.stop(now + fadeTime);
+
+                // Clean up after fade completes
+                setTimeout(() => {
+                    try {
+                        oldFilter.disconnect();
+                        oldGain.disconnect();
+                    } catch (e) {
+                        // Already disconnected
+                    }
+                }, fadeTime * 1000 + 100);
+            } catch (error) {
+                // Oscillator might already be stopped, clean up anyway
+                try {
+                    oldFilter.disconnect();
+                    oldGain.disconnect();
+                } catch (e) {
+                    // Already disconnected
+                }
+            }
+        }
     }
 }
 
