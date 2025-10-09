@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đàn Tranh Tuner</title>
-    <link rel="icon" href="assets/maml-logo.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
     <style>
         * {
             margin: 0;
@@ -26,20 +26,8 @@
         }
 
         header {
-            display: flex;
-            align-items: center;
+            text-align: center;
             margin-bottom: 30px;
-            gap: 20px;
-        }
-
-        .logo {
-            width: 100px;
-            height: 100px;
-            flex-shrink: 0;
-        }
-
-        .header-text {
-            text-align: left;
         }
 
         h1 {
@@ -96,20 +84,6 @@
 
         select {
             min-width: 180px;
-        }
-
-        optgroup {
-            font-weight: bold;
-            font-style: normal;
-            color: #008ECC;
-            background: #f0f8ff;
-        }
-
-        optgroup option {
-            font-weight: normal;
-            color: #333;
-            background: white;
-            padding-left: 10px;
         }
 
         select:focus, input[type="number"]:focus {
@@ -180,23 +154,15 @@
 
         .string-label {
             font-family: Arial, sans-serif;
-            font-size: 16px;
+            font-size: 14px;
             fill: #000000;
             font-weight: 600;
-            letter-spacing: -2px;
-            stroke: white;
-            stroke-width: 0.5px;
-            paint-order: stroke fill;
         }
 
         .frequency-display {
             font-family: 'Courier New', monospace;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: -2px;
-            stroke: white;
-            stroke-width: 0.5px;
-            paint-order: stroke fill;
         }
 
         .tuning-indicator {
@@ -316,101 +282,24 @@
 <body>
     <div class="container">
         <header>
-            <img src="assets/maml-logo.png" alt="MAML Logo" class="logo">
-            <div class="header-text">
-                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v{{VERSION}}</span></h1>
-                <p class="subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
-            </div>
+            <h1>Đàn Tranh Tuner</h1>
+            <p class="subtitle">Multi-String Tuner with Microtonal Support</p>
         </header>
 
         <div class="controls">
             <div class="control-row">
                 <div class="control-group">
                     <label for="numStrings">Strings:</label>
-                    <input type="number" id="numStrings" min="1" max="30" value="17">
+                    <input type="number" id="numStrings" min="1" max="30" value="16">
                 </div>
                 <div class="control-group">
                     <label for="tuningPreset">Tuning:</label>
                     <select id="tuningPreset">
-                        <optgroup label="Standard Presets">
-                            <option value="standard16">Standard 16-String (Bắc)</option>
-                            <option value="standard17" selected>Standard 17-String</option>
-                            <option value="standard21">Standard 21-String</option>
-                        </optgroup>
-                        <optgroup label="Vietnamese Scales (Dây Đàn Tranh)">
-                            <option value="C-D-E-G-A">Bắc (Northern) - C-D-E-G-A</option>
-                            <option value="C-D-F-G-A">Nam (Southern) - C-D-F-G-A</option>
-                            <option value="C-D-E-G-B">Trung (Central) - C-D-E-G-B</option>
-                            <option value="C-Eb-F-G-Bb">Ru Con (Lullaby) - C-Eb-F-G-Bb</option>
-                            <option value="D-F-G-A-C">Nam Ai (Southern Sadness) - D-F-G-A-C</option>
-                            <option value="D-E-F#-A-B">Nam Xuân (Southern Spring) - D-E-F#-A-B</option>
-                            <option value="C-Eb-F-G-Ab">Oán (Lament) - C-Eb-F-G-Ab</option>
-                        </optgroup>
-                        <optgroup label="Chinese Pentatonic (五声音阶)">
-                            <option value="C-D-E-G-A">Gong (宫) - C-D-E-G-A</option>
-                            <option value="D-E-G-A-C">Shang (商) - D-E-G-A-C</option>
-                            <option value="E-G-A-C-D">Jue (角) - E-G-A-C-D</option>
-                            <option value="G-A-C-D-E">Zhi (徵) - G-A-C-D-E</option>
-                            <option value="A-C-D-E-G">Yu (羽) - A-C-D-E-G</option>
-                        </optgroup>
-                        <optgroup label="Japanese Pentatonic (五音音階)">
-                            <option value="C-D-Eb-G-Ab">Hirajoshi - C-D-Eb-G-Ab</option>
-                            <option value="C-Db-F-Gb-Bb">Iwato - C-Db-F-Gb-Bb</option>
-                            <option value="C-Db-F-G-Bb">In-sen - C-Db-F-G-Bb</option>
-                            <option value="C-D-Eb-G-A">Kumoi - C-D-Eb-G-A</option>
-                            <option value="C-D-F-G-A">Ritusen - C-D-F-G-A</option>
-                        </optgroup>
-                        <optgroup label="Other Pentatonic">
-                            <option value="C-D-F-G-Bb">Egyptian - C-D-F-G-Bb</option>
-                        </optgroup>
-                        <optgroup label="Hexatonic (6 notes)">
-                            <option value="C-D-Eb-E-G-A">Blues Major - C-D-Eb-E-G-A</option>
-                            <option value="C-Eb-F-Gb-G-Bb">Blues Minor - C-Eb-F-Gb-G-Bb</option>
-                            <option value="C-D-E-F#-G#-A#">Whole Tone - C-D-E-F#-G#-A#</option>
-                            <option value="C-D#-E-G-Ab-B">Augmented - C-D#-E-G-Ab-B</option>
-                        </optgroup>
-                        <optgroup label="Heptatonic (7 notes / Modes)">
-                            <option value="C-D-E-F-G-A-B">Major (Ionian) - C-D-E-F-G-A-B</option>
-                            <option value="D-E-F-G-A-B-C">Dorian - D-E-F-G-A-B-C</option>
-                            <option value="E-F-G-A-B-C-D">Phrygian - E-F-G-A-B-C-D</option>
-                            <option value="F-G-A-B-C-D-E">Lydian - F-G-A-B-C-D-E</option>
-                            <option value="G-A-B-C-D-E-F">Mixolydian - G-A-B-C-D-E-F</option>
-                            <option value="A-B-C-D-E-F-G">Natural Minor (Aeolian) - A-B-C-D-E-F-G</option>
-                            <option value="A-B-C-D-E-F-G#">Harmonic Minor - A-B-C-D-E-F-G#</option>
-                        </optgroup>
-                        <optgroup label="Custom">
-                            <option value="custom">Custom Tuning</option>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="control-group" id="startingNoteGroup">
-                    <label for="startingNote">Start:</label>
-                    <select id="startingNote">
-                        <option value="C2">C2</option>
-                        <option value="Db2">Db2</option>
-                        <option value="D2">D2</option>
-                        <option value="Eb2">Eb2</option>
-                        <option value="E2">E2</option>
-                        <option value="F2">F2</option>
-                        <option value="F#2">F#2</option>
-                        <option value="G2">G2</option>
-                        <option value="Ab2">Ab2</option>
-                        <option value="A2">A2</option>
-                        <option value="Bb2">Bb2</option>
-                        <option value="B2">B2</option>
-                        <option value="C3">C3</option>
-                        <option value="Db3">Db3</option>
-                        <option value="D3">D3</option>
-                        <option value="Eb3">Eb3</option>
-                        <option value="E3" selected>E3</option>
-                        <option value="F3">F3</option>
-                        <option value="F#3">F#3</option>
-                        <option value="G3">G3</option>
-                        <option value="Ab3">Ab3</option>
-                        <option value="A3">A3</option>
-                        <option value="Bb3">Bb3</option>
-                        <option value="B3">B3</option>
-                        <option value="C4">C4</option>
+                        <option value="standard16">Standard 16-String (Bắc)</option>
+                        <option value="standard17">Standard 17-String</option>
+                        <option value="standard21">Standard 21-String</option>
+                        <option value="pentatonic">Pentatonic (C-D-E-G-A)</option>
+                        <option value="custom">Custom Tuning</option>
                     </select>
                 </div>
                 <div class="control-group">

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đàn Tranh Tuner</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #008ECC;
+        }
+
+        button {
+            background: #008ECC;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #006699;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #startBtn.listening {
+            background: #e74c3c;
+        }
+
+        #startBtn.listening:hover {
+            background: #c0392b;
+        }
+
+        .tuner-display {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            overflow-x: auto;
+        }
+
+        .svg-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .string-line {
+            stroke: #000000;
+            stroke-width: 2;
+        }
+
+        .string-label {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            fill: #000000;
+            font-weight: 600;
+        }
+
+        .frequency-display {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .tuning-indicator {
+            transition: all 0.3s;
+        }
+
+        .in-tune {
+            fill: #27ae60;
+        }
+
+        .sharp {
+            fill: #e74c3c;
+        }
+
+        .flat {
+            fill: #3498db;
+        }
+
+        .info-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            color: #333;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 400px;
+            z-index: 1000;
+        }
+
+        .detected-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #008ECC;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .custom-tuning {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .string-config {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .string-config-item {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .string-config-item label {
+            font-size: 12px;
+            margin: 0;
+            min-width: 30px;
+        }
+
+        .string-config-item input {
+            flex: 1;
+            padding: 5px;
+            font-size: 12px;
+        }
+
+        .frequency-bar {
+            height: 40px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .frequency-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db 0%, #27ae60 50%, #e74c3c 100%);
+            transition: width 0.1s;
+            position: relative;
+        }
+
+        .frequency-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #2c3e50;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Đàn Tranh Tuner</h1>
+            <p class="subtitle">Multi-String Tuner with Microtonal Support</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="numStrings">Number of Strings:</label>
+                    <input type="number" id="numStrings" min="1" max="30" value="16">
+                </div>
+                <div class="control-group">
+                    <label for="tuningPreset">Tuning Preset:</label>
+                    <select id="tuningPreset">
+                        <option value="standard16">Standard 16-String (Bắc)</option>
+                        <option value="standard17">Standard 17-String</option>
+                        <option value="standard21">Standard 21-String</option>
+                        <option value="pentatonic">Pentatonic (C-D-E-G-A)</option>
+                        <option value="custom">Custom Tuning</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="baseFreq">Base Frequency (A4):</label>
+                    <input type="number" id="baseFreq" min="400" max="460" value="440" step="0.1">
+                </div>
+            </div>
+            <div class="control-row">
+                <button id="generateStrings">Generate Strings</button>
+                <button id="startBtn">Start Listening</button>
+            </div>
+            <div id="customTuningSection" class="custom-tuning" style="display: none;">
+                <label>Custom String Tuning (note + cents offset, e.g., C4+15):</label>
+                <div id="stringConfigs" class="string-config"></div>
+            </div>
+        </div>
+
+        <div class="tuner-display">
+            <div class="svg-container">
+                <svg id="tunerSvg" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <g id="stringsGroup"></g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>Detection Status</h3>
+            <div class="detected-info">
+                <div class="info-item">
+                    <div class="info-label">Detected Pitch</div>
+                    <div class="info-value" id="detectedPitch">--</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Frequency</div>
+                    <div class="info-value" id="detectedFreq">-- Hz</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Sensitivity</div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                        <input type="range" id="sensitivity" min="0.01" max="0.1" step="0.01" value="0.02" style="flex: 1;">
+                        <span id="sensitivityValue" style="font-size: 14px; min-width: 40px;">0.02</span>
+                    </div>
+                </div>
+            </div>
+            <div class="frequency-bar">
+                <div class="frequency-marker"></div>
+                <div class="frequency-bar-fill" id="tuningBar" style="width: 50%"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="yin.js"></script>
+    <script src="tuner.js"></script>
+</body>
+</html>
