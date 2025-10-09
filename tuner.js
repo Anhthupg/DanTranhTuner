@@ -413,11 +413,12 @@ class DanTranhTuner {
         this.elements.stringsGroup.innerHTML = '';
 
         const width = 1200;
-        const margin = 100;
+        const leftMargin = 35; // Space for labels
+        const rightMargin = 70; // Small margin on the right
 
         // Calculate Y positions based on MIDI semitone spacing
         const stringPositions = this.calculateStringPositions();
-        const totalHeight = Math.max(600, stringPositions[stringPositions.length - 1] + margin);
+        const totalHeight = Math.max(600, stringPositions[stringPositions.length - 1] + 100);
 
         // Update SVG viewBox
         this.elements.svg.setAttribute('viewBox', `0 0 1200 ${totalHeight}`);
@@ -425,21 +426,31 @@ class DanTranhTuner {
         this.strings.forEach((stringData, index) => {
             const y = stringPositions[index];
 
+            // Calculate left end position based on frequency (cents from lowest string)
+            // String 0 (lowest) is longest, starting from leftMargin, higher strings get shorter from the left
+            const lowestStringFreq = this.strings[0].frequency;
+            const centsFromLowest = this.noteMap.getCentsOffset(stringData.frequency, lowestStringFreq);
+            const shortenAmount = (centsFromLowest / 100) * 2; // 2px per 100 cents
+            const leftX = leftMargin + shortenAmount;
+
             // String line
             const line = document.createElementNS(svgNS, 'line');
-            line.setAttribute('x1', margin);
-            line.setAttribute('x2', width - margin);
+            line.setAttribute('x1', leftX);
+            line.setAttribute('x2', width - rightMargin);
             line.setAttribute('y1', y);
             line.setAttribute('y2', y);
             line.setAttribute('class', 'string-line');
             line.setAttribute('data-string-index', index);
 
-            // String label (left side)
+            // String label (left side) - positioned 5px before the string starts
             const label = document.createElementNS(svgNS, 'text');
-            label.setAttribute('x', margin - 10);
+            label.setAttribute('x', leftX - 5);
             label.setAttribute('y', y + 5);
             label.setAttribute('text-anchor', 'end');
             label.setAttribute('class', 'string-label');
+            label.setAttribute('stroke', 'white');
+            label.setAttribute('stroke-width', '0.8');
+            label.setAttribute('paint-order', 'stroke fill');
             const labelText = stringData.cents !== 0
                 ? `${index + 1}: ${stringData.note}${stringData.cents > 0 ? '+' : ''}${stringData.cents}`
                 : `${index + 1}: ${stringData.note}`;
@@ -447,17 +458,20 @@ class DanTranhTuner {
 
             // Frequency display (right side)
             const freqDisplay = document.createElementNS(svgNS, 'text');
-            freqDisplay.setAttribute('x', width - margin + 10);
+            freqDisplay.setAttribute('x', width - rightMargin + 5);
             freqDisplay.setAttribute('y', y + 5);
             freqDisplay.setAttribute('text-anchor', 'start');
             freqDisplay.setAttribute('class', 'frequency-display');
             freqDisplay.setAttribute('id', `freq-${index}`);
+            freqDisplay.setAttribute('stroke', 'white');
+            freqDisplay.setAttribute('stroke-width', '0.8');
+            freqDisplay.setAttribute('paint-order', 'stroke fill');
             freqDisplay.textContent = `${stringData.frequency.toFixed(2)} Hz`;
 
             // Add full-width spectrogram
-            const spectrogramWidth = width - 2 * margin;
+            const spectrogramWidth = width - leftMargin - rightMargin;
             const spectrogramHeight = 30;
-            const spectrogramX = margin;
+            const spectrogramX = leftMargin;
             const spectrogramY = y - spectrogramHeight / 2;
 
             // Background for spectrogram
@@ -843,10 +857,11 @@ class DanTranhTuner {
 
         const data = this.spectrogramData[stringIndex];
         const width = 1200;
-        const margin = 100;
-        const spectrogramWidth = width - 2 * margin;
+        const leftMargin = 35;
+        const rightMargin = 70;
+        const spectrogramWidth = width - leftMargin - rightMargin;
         const spectrogramHeight = 30;
-        const spectrogramX = margin;
+        const spectrogramX = leftMargin;
 
         // Get string position
         const stringPositions = this.calculateStringPositions();
@@ -898,9 +913,10 @@ class DanTranhTuner {
 
         // Calculate position - use CURRENT data length for scrolling effect
         const width = 1200;
-        const margin = 100;
-        const spectrogramWidth = width - 2 * margin;
-        const spectrogramX = margin;
+        const leftMargin = 35;
+        const rightMargin = 70;
+        const spectrogramWidth = width - leftMargin - rightMargin;
+        const spectrogramX = leftMargin;
         const data = this.spectrogramData[stringIndex];
 
         // Calculate x based on CURRENT position in the scrolling buffer

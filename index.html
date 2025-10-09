@@ -13,28 +13,27 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Arial Narrow', 'Helvetica Condensed', 'Roboto Condensed', 'Avenir Next Condensed', sans-serif-condensed;
+            background: #fff;
             min-height: 100vh;
-            padding: 20px;
-            color: #fff;
+            color: #333;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            width: 100%;
         }
 
         header {
             display: flex;
             align-items: center;
-            margin-bottom: 30px;
-            gap: 20px;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
         }
 
         .logo {
-            width: 100px;
-            height: 100px;
+            width: 60px;
+            height: 60px;
             flex-shrink: 0;
         }
 
@@ -43,28 +42,24 @@
         }
 
         h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 1.8em;
         }
 
         .subtitle {
-            font-size: 1.1em;
-            opacity: 0.9;
+            font-size: 1em;
+            opacity: 0.7;
         }
 
         .controls {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            margin-bottom: 25px;
+            background: #f5f5f5;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
             color: #333;
         }
 
         .control-row {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -72,30 +67,29 @@
         .control-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
         }
 
         label {
-            font-weight: 600;
-            color: #2c3e50;
+            font-weight: 500;
+            color: #333;
             white-space: nowrap;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         select, input[type="number"] {
-            padding: 8px 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
         }
 
         input[type="number"] {
-            width: 80px;
+            width: 60px;
         }
 
         select {
-            min-width: 180px;
+            min-width: 150px;
         }
 
         optgroup {
@@ -121,28 +115,20 @@
             background: #008ECC;
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
         }
 
         button:hover {
             background: #006699;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        button:active {
-            transform: translateY(0);
         }
 
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
-            transform: none;
         }
 
         #startBtn.listening {
@@ -154,17 +140,12 @@
         }
 
         .tuner-display {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            background: #fff;
             overflow-x: auto;
         }
 
         .svg-container {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
             min-height: 400px;
         }
 
@@ -179,23 +160,23 @@
         }
 
         .string-label {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial Narrow', 'Helvetica Condensed', 'Roboto Condensed', 'Avenir Next Condensed', sans-serif-condensed;
             font-size: 16px;
             fill: #000000;
             font-weight: 600;
-            letter-spacing: -2px;
+            letter-spacing: -0.5px;
             stroke: white;
-            stroke-width: 0.5px;
+            stroke-width: 0.8px;
             paint-order: stroke fill;
         }
 
         .frequency-display {
-            font-family: 'Courier New', monospace;
+            font-family: 'Arial Narrow', 'Helvetica Condensed', 'Roboto Condensed', 'Avenir Next Condensed', sans-serif-condensed;
             font-size: 18px;
             font-weight: bold;
-            letter-spacing: -2px;
+            letter-spacing: -0.5px;
             stroke: white;
-            stroke-width: 0.5px;
+            stroke-width: 0.8px;
             paint-order: stroke fill;
         }
 
@@ -255,10 +236,9 @@
         }
 
         .custom-tuning {
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 10px;
+            padding: 10px;
             background: #f8f9fa;
-            border-radius: 8px;
         }
 
         .string-config {
@@ -318,7 +298,7 @@
         <header>
             <img src="assets/maml-logo.png" alt="MAML Logo" class="logo">
             <div class="header-text">
-                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v{{VERSION}}</span></h1>
+                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v0.1.8</span></h1>
                 <p class="subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
             </div>
         </header>
