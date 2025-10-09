@@ -26,14 +26,49 @@ const TUNING_PRESETS = {
             "C4", "D4", "E4", "F4", "G4", "A4", "B4",
             "C5", "D5", "E5", "F5", "G5", "A5", "B5"
         ]
-    },
-    pentatonic: {
-        name: "Pentatonic (C-D-E-G-A)",
-        strings: [
-            "C3", "D3", "E3", "G3", "A3", "C4", "D4", "E4",
-            "G4", "A4", "C5", "D5", "E5", "G5", "A5", "C6"
-        ]
     }
+};
+
+// Comprehensive scale definitions from tuning-systems.json
+const SCALE_PATTERNS = {
+    // Vietnamese Scales
+    'C-D-E-G-A': ['C', 'D', 'E', 'G', 'A'],
+    'C-D-F-G-A': ['C', 'D', 'F', 'G', 'A'],
+    'C-D-E-G-B': ['C', 'D', 'E', 'G', 'B'],
+    'C-Eb-F-G-Bb': ['C', 'Eb', 'F', 'G', 'Bb'],
+    'D-F-G-A-C': ['D', 'F', 'G', 'A', 'C'],
+    'D-E-F#-A-B': ['D', 'E', 'F#', 'A', 'B'],
+    'C-Eb-F-G-Ab': ['C', 'Eb', 'F', 'G', 'Ab'],
+
+    // Common Pentatonic
+    'A-C-D-E-G': ['A', 'C', 'D', 'E', 'G'],
+    'C-D-F-G-Bb': ['C', 'D', 'F', 'G', 'Bb'],
+
+    // Chinese Pentatonic
+    'D-E-G-A-C': ['D', 'E', 'G', 'A', 'C'],
+    'E-G-A-C-D': ['E', 'G', 'A', 'C', 'D'],
+    'G-A-C-D-E': ['G', 'A', 'C', 'D', 'E'],
+
+    // Japanese Pentatonic
+    'C-D-Eb-G-Ab': ['C', 'D', 'Eb', 'G', 'Ab'],
+    'C-Db-F-Gb-Bb': ['C', 'Db', 'F', 'Gb', 'Bb'],
+    'C-Db-F-G-Bb': ['C', 'Db', 'F', 'G', 'Bb'],
+    'C-D-Eb-G-A': ['C', 'D', 'Eb', 'G', 'A'],
+
+    // Hexatonic
+    'C-D-Eb-E-G-A': ['C', 'D', 'Eb', 'E', 'G', 'A'],
+    'C-Eb-F-Gb-G-Bb': ['C', 'Eb', 'F', 'Gb', 'G', 'Bb'],
+    'C-D-E-F#-G#-A#': ['C', 'D', 'E', 'F#', 'G#', 'A#'],
+    'C-D#-E-G-Ab-B': ['C', 'D#', 'E', 'G', 'Ab', 'B'],
+
+    // Heptatonic (7-note scales)
+    'C-D-E-F-G-A-B': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+    'A-B-C-D-E-F-G': ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+    'D-E-F-G-A-B-C': ['D', 'E', 'F', 'G', 'A', 'B', 'C'],
+    'E-F-G-A-B-C-D': ['E', 'F', 'G', 'A', 'B', 'C', 'D'],
+    'F-G-A-B-C-D-E': ['F', 'G', 'A', 'B', 'C', 'D', 'E'],
+    'G-A-B-C-D-E-F': ['G', 'A', 'B', 'C', 'D', 'E', 'F'],
+    'A-B-C-D-E-F-G#': ['A', 'B', 'C', 'D', 'E', 'F', 'G#']
 };
 
 // Note frequency mapping (A4 = 440Hz standard)
@@ -248,6 +283,10 @@ class DanTranhTuner {
                 const tuning = input ? input.value : `C${3 + Math.floor(i / 5)}`;
                 this.strings.push(this.parseNoteWithCents(tuning));
             }
+        } else if (SCALE_PATTERNS[preset]) {
+            // Generate strings from scale pattern
+            const startingNote = this.elements.startingNote?.value || 'C3';
+            this.strings = this.generateFromScale(SCALE_PATTERNS[preset], numStrings, startingNote);
         } else {
             // Use preset - but respect numStrings and starting note for adjustable presets
             const presetData = TUNING_PRESETS[preset];
@@ -290,6 +329,35 @@ class DanTranhTuner {
         }
 
         this.renderStrings();
+    }
+
+    generateFromScale(scalePattern, numStrings, startingNote) {
+        // Parse starting note
+        const startNoteMatch = startingNote.match(/([A-G][#b]?)(\d)/);
+        if (!startNoteMatch) return [];
+
+        const startNoteName = startNoteMatch[1];
+        let currentOctave = parseInt(startNoteMatch[2]);
+
+        // Find starting position in scale
+        const startIndex = scalePattern.indexOf(startNoteName);
+        const actualStartIndex = startIndex !== -1 ? startIndex : 0;
+
+        const result = [];
+
+        for (let i = 0; i < numStrings; i++) {
+            // Calculate which position in scale we're at
+            const position = (actualStartIndex + i) % scalePattern.length;
+            const note = scalePattern[position];
+
+            // Calculate octave: increment every scalePattern.length notes
+            const cyclesCompleted = Math.floor(i / scalePattern.length);
+            const octave = currentOctave + cyclesCompleted;
+
+            result.push(this.parseNoteWithCents(`${note}${octave}`));
+        }
+
+        return result;
     }
 
     transposePreset(presetNotes, newStartNote) {
