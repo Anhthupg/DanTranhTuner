@@ -199,7 +199,22 @@ class DanTranhTuner {
         this.wasDetecting = {}; // { stringIndex: boolean } - track if we were detecting signal
 
         // Checkbox state tracking
-        this.checkboxStates = {}; // { "stringIndex-large": boolean, "stringIndex-small": boolean }
+        this.checkboxStates = {}; // { "pitchClass-type": { selected: boolean, color: string } }
+        this.checkboxColorIndex = 0; // Current color index for new selections
+        this.checkboxColors = [
+            '#FF6B6B', // Red
+            '#4ECDC4', // Turquoise
+            '#45B7D1', // Sky Blue
+            '#FFA07A', // Light Salmon
+            '#98D8C8', // Mint
+            '#F7DC6F', // Yellow
+            '#BB8FCE', // Purple
+            '#F8B500', // Orange
+            '#7FDBFF', // Aqua
+            '#FF69B4', // Hot Pink
+            '#3CB371', // Medium Sea Green
+            '#DDA0DD'  // Plum
+        ];
 
         this.initializeElements();
         this.attachEventListeners();
@@ -502,14 +517,43 @@ class DanTranhTuner {
             checkbox2.style.cursor = 'pointer';
 
             // Add click handlers
-            const toggleCheckbox = (checkbox, stringIndex, type) => {
-                const key = `${stringIndex}-${type}`;
-                this.checkboxStates[key] = !this.checkboxStates[key];
-                checkbox.setAttribute('fill', this.checkboxStates[key] ? '#333' : 'white');
+            const toggleCheckbox = (clickedIndex, type) => {
+                // Get the pitch class (note without octave) of the clicked string
+                const clickedNote = this.strings[clickedIndex].note;
+                const pitchClass = clickedNote.replace(/\d+$/, ''); // Remove octave number
+
+                // Toggle state for this pitch class and type
+                const pitchKey = `${pitchClass}-${type}`;
+
+                if (!this.checkboxStates[pitchKey]) {
+                    // New selection - assign a new color
+                    this.checkboxStates[pitchKey] = {
+                        selected: true,
+                        color: this.checkboxColors[this.checkboxColorIndex % this.checkboxColors.length]
+                    };
+                    this.checkboxColorIndex++;
+                } else {
+                    // Toggle existing selection
+                    this.checkboxStates[pitchKey].selected = !this.checkboxStates[pitchKey].selected;
+                }
+
+                const newFill = this.checkboxStates[pitchKey].selected
+                    ? this.checkboxStates[pitchKey].color
+                    : 'white';
+
+                // Update all checkboxes with the same pitch class and type
+                this.strings.forEach((str, idx) => {
+                    const notePitchClass = str.note.replace(/\d+$/, '');
+                    if (notePitchClass === pitchClass) {
+                        const checkboxClass = type === 'large' ? 'checkbox-large' : 'checkbox-small';
+                        const checkboxes = document.querySelectorAll(`.${checkboxClass}[data-string-index="${idx}"]`);
+                        checkboxes.forEach(cb => cb.setAttribute('fill', newFill));
+                    }
+                });
             };
 
-            checkbox1.addEventListener('click', () => toggleCheckbox(checkbox1, index, 'large'));
-            checkbox2.addEventListener('click', () => toggleCheckbox(checkbox2, index, 'small'));
+            checkbox1.addEventListener('click', () => toggleCheckbox(index, 'large'));
+            checkbox2.addEventListener('click', () => toggleCheckbox(index, 'small'));
 
             // Add full-width spectrogram
             const spectrogramWidth = width - leftMargin - rightMargin;
