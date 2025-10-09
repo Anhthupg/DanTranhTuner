@@ -139,6 +139,10 @@
             background: #c0392b;
         }
 
+        #stopSoundBtn:hover {
+            background: #c0392b;
+        }
+
         .tuner-display {
             background: #fff;
             overflow-x: auto;
@@ -309,7 +313,7 @@
         <header>
             <img src="assets/maml-logo.png" alt="MAML Logo" class="logo">
             <div class="header-text">
-                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.0.5</span></h1>
+                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.0.6</span></h1>
                 <p class="subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
             </div>
         </header>
@@ -410,6 +414,7 @@
                 </div>
                 <button id="generateStrings">Generate</button>
                 <button id="startBtn">Start Listening</button>
+                <button id="stopSoundBtn" style="background: #e74c3c; display: none;">Stop Sound</button>
                 <div style="margin-left: auto; display: flex; gap: 15px; align-items: center;">
                     <span style="font-weight: 600; font-size: 16px;" id="detectedPitch">--</span>
                     <span style="font-weight: 600; font-size: 14px; color: #666;" id="detectedFreq">-- Hz</span>

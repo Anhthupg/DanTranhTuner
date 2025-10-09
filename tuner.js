@@ -246,6 +246,7 @@ class DanTranhTuner {
             baseFreq: document.getElementById('baseFreq'),
             generateBtn: document.getElementById('generateStrings'),
             startBtn: document.getElementById('startBtn'),
+            stopSoundBtn: document.getElementById('stopSoundBtn'),
             customSection: document.getElementById('customTuningSection'),
             stringConfigs: document.getElementById('stringConfigs'),
             svg: document.getElementById('tunerSvg'),
@@ -258,9 +259,18 @@ class DanTranhTuner {
     attachEventListeners() {
         this.elements.generateBtn.addEventListener('click', () => this.generateStrings());
         this.elements.startBtn.addEventListener('click', () => this.toggleListening());
+        this.elements.stopSoundBtn.addEventListener('click', () => this.stopAllSounds());
         this.elements.tuningPreset.addEventListener('change', () => this.handlePresetChange());
         this.elements.startingNote.addEventListener('change', () => this.generateStrings());
         this.elements.baseFreq.addEventListener('change', () => this.updateBaseFrequency());
+
+        // Add spacebar listener to stop sound
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && this.toneOscillator) {
+                e.preventDefault(); // Prevent page scroll
+                this.stopAllSounds();
+            }
+        });
     }
 
     handlePresetChange() {
@@ -1126,7 +1136,7 @@ class DanTranhTuner {
         }
     }
 
-    playTone(frequency, duration = 10000) {
+    playTone(frequency, duration = 300000) {
         this.initializeToneGenerator();
 
         if (!this.toneContext) {
@@ -1164,30 +1174,28 @@ class DanTranhTuner {
             // Smooth envelope to avoid clicks
             const now = this.toneContext.currentTime;
             const attackTime = 0.01; // Very quick attack for brightness
-            const sustainTime = duration / 1000 - 1; // Sustain for most of duration
-            const releaseTime = 1; // 1 second release (gradual taper)
 
             // Attack: quick fade in for bright sound
             toneGain.gain.setValueAtTime(0, now);
             toneGain.gain.linearRampToValueAtTime(0.3, now + attackTime);
 
-            // Sustain: hold at volume
-            toneGain.gain.setValueAtTime(0.3, now + attackTime + sustainTime);
-
-            // Release: gradual taper down over 1 second
-            toneGain.gain.linearRampToValueAtTime(0, now + attackTime + sustainTime + releaseTime);
+            // Sustain: hold at volume indefinitely (until manually stopped)
+            toneGain.gain.setValueAtTime(0.3, now + attackTime);
 
             // Start the oscillator
             oscillator.start(now);
 
-            // Stop after full duration
-            oscillator.stop(now + attackTime + sustainTime + releaseTime);
+            // Schedule stop at a very long duration (5 minutes)
+            oscillator.stop(now + duration / 1000);
 
             // Store references for stopping
             this.toneOscillator = oscillator;
             this.toneGain = toneGain;
             this.currentFilter = filter;
             this.currentPlayingFreq = frequency;
+
+            // Show stop button
+            this.elements.stopSoundBtn.style.display = 'block';
 
             // Clean up when done
             oscillator.onended = () => {
@@ -1200,10 +1208,11 @@ class DanTranhTuner {
                     this.toneGain = null;
                     this.currentFilter = null;
                     this.currentPlayingFreq = null;
+                    this.elements.stopSoundBtn.style.display = 'none';
                 }
             };
 
-            console.log(`Playing bright tone: ${frequency.toFixed(2)} Hz for ${duration/1000}s`);
+            console.log(`Playing bright tone: ${frequency.toFixed(2)} Hz (press spacebar or click Stop Sound to stop)`);
         } catch (error) {
             console.error('Error playing tone:', error);
         }
@@ -1251,6 +1260,14 @@ class DanTranhTuner {
                     // Already disconnected
                 }
             }
+        }
+    }
+
+    stopAllSounds() {
+        if (this.toneOscillator) {
+            this.stopTone(0.3); // Quick fade out
+            this.elements.stopSoundBtn.style.display = 'none';
+            console.log('Sound stopped');
         }
     }
 }
