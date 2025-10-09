@@ -153,6 +153,10 @@ class NoteFrequencyMap {
 // Main Tuner Application
 class DanTranhTuner {
     constructor() {
+        // Version tracking for debugging
+        this.version = '1.0.9';
+        console.log(`%cĐàn Tranh Tuner v${this.version}`, 'color: #008ECC; font-weight: bold; font-size: 16px;');
+
         this.audioContext = null;
         this.analyser = null;
         this.microphone = null;
@@ -452,9 +456,99 @@ class DanTranhTuner {
         return { note, cents, frequency };
     }
 
+    findClosestPitchClass(targetPitchClass) {
+        // Get all unique pitch classes in current tuning
+        const pitchClasses = [...new Set(this.strings.map(s => s.note.replace(/\d+$/, '')))];
+
+        if (pitchClasses.includes(targetPitchClass)) {
+            return targetPitchClass;
+        }
+
+        // Find closest pitch class by semitone distance
+        const noteOrder = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const flatToSharp = { 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#' };
+
+        // Convert flats to sharps for comparison
+        const normalizeNote = (note) => flatToSharp[note] || note;
+        const targetIndex = noteOrder.indexOf(normalizeNote(targetPitchClass));
+
+        if (targetIndex === -1) return pitchClasses[0]; // Fallback
+
+        let minDistance = 12;
+        let closest = pitchClasses[0];
+
+        pitchClasses.forEach(pc => {
+            const pcIndex = noteOrder.indexOf(normalizeNote(pc));
+            if (pcIndex !== -1) {
+                // Calculate circular distance
+                const distance = Math.min(
+                    Math.abs(pcIndex - targetIndex),
+                    12 - Math.abs(pcIndex - targetIndex)
+                );
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = pc;
+                }
+            }
+        });
+
+        return closest;
+    }
+
+    autoSelectDefaultCheckboxes() {
+        // Get unique pitch classes
+        const pitchClasses = [...new Set(this.strings.map(s => s.note.replace(/\d+$/, '')))];
+
+        if (pitchClasses.length === 0) return;
+
+        // Note: checkboxStates are already cleared in renderStrings()
+        // This function only sets the default selections
+
+        // Find G or closest for large checkbox
+        const gLarge = this.findClosestPitchClass('G');
+        const pitchKeyLarge = `${gLarge}-large`;
+        this.checkboxStates[pitchKeyLarge] = {
+            selected: true,
+            color: this.checkboxColors[this.checkboxColorIndex % this.checkboxColors.length]
+        };
+        this.checkboxColorIndex++;
+
+        // Find C and G or closest for small checkboxes
+        const cSmall = this.findClosestPitchClass('C');
+        const gSmall = this.findClosestPitchClass('G');
+
+        // Add C for small
+        const pitchKeyC = `${cSmall}-small`;
+        this.checkboxStates[pitchKeyC] = {
+            selected: true,
+            color: this.checkboxColors[this.checkboxColorIndex % this.checkboxColors.length]
+        };
+        this.checkboxColorIndex++;
+
+        // Add G for small (only if different from C)
+        if (gSmall !== cSmall) {
+            const pitchKeyG = `${gSmall}-small`;
+            this.checkboxStates[pitchKeyG] = {
+                selected: true,
+                color: this.checkboxColors[this.checkboxColorIndex % this.checkboxColors.length]
+            };
+            this.checkboxColorIndex++;
+        }
+
+        console.log('Auto-selected checkboxes:', this.checkboxStates);
+    }
+
     renderStrings() {
         const svgNS = 'http://www.w3.org/2000/svg';
+
+        // Clear DOM
         this.elements.stringsGroup.innerHTML = '';
+
+        // IMPORTANT: Clear and reset checkbox states to defaults
+        // This ensures checkboxes reset every time strings are regenerated
+        console.log('🔄 Resetting checkbox states to defaults...');
+        this.checkboxStates = {};
+        this.checkboxColorIndex = 0;
 
         const width = 1200;
         const leftMargin = 35; // Space for labels
@@ -472,6 +566,9 @@ class DanTranhTuner {
         const minFreq = Math.min(...frequencies);
         const maxFreq = Math.max(...frequencies);
         const freqRange = maxFreq - minFreq;
+
+        // Auto-select default checkboxes
+        this.autoSelectDefaultCheckboxes();
 
         this.strings.forEach((stringData, index) => {
             const y = stringPositions[index];
@@ -548,12 +645,25 @@ class DanTranhTuner {
             const smallRadius = 5;
             const largeRadius = 8;
 
+            // Get pitch class for this string
+            const pitchClass = stringData.note.replace(/\d+$/, '');
+
             // Large checkbox (right) - positioned with right edge at right margin
+            const checkbox1Cx = width - rightMargin - largeRadius / 2;
+            const checkbox1Cy = y;
+
             const checkbox1 = document.createElementNS(svgNS, 'circle');
-            checkbox1.setAttribute('cx', width - rightMargin - largeRadius / 2);
-            checkbox1.setAttribute('cy', y);
+            checkbox1.setAttribute('cx', checkbox1Cx);
+            checkbox1.setAttribute('cy', checkbox1Cy);
             checkbox1.setAttribute('r', largeRadius);
-            checkbox1.setAttribute('fill', 'white');
+
+            // Apply initial color based on checkbox state
+            const pitchKeyLarge = `${pitchClass}-large`;
+            const largeFill = this.checkboxStates[pitchKeyLarge]?.selected
+                ? this.checkboxStates[pitchKeyLarge].color
+                : 'white';
+            checkbox1.setAttribute('fill', largeFill);
+
             checkbox1.setAttribute('stroke', '#333');
             checkbox1.setAttribute('stroke-width', 1.5);
             checkbox1.setAttribute('class', 'checkbox-large');
@@ -561,18 +671,52 @@ class DanTranhTuner {
             checkbox1.setAttribute('data-checkbox-type', 'large');
             checkbox1.style.cursor = 'pointer';
 
+            // Large checkbox label
+            const checkbox1Label = document.createElementNS(svgNS, 'text');
+            checkbox1Label.setAttribute('x', checkbox1Cx);
+            checkbox1Label.setAttribute('y', checkbox1Cy);
+            checkbox1Label.setAttribute('text-anchor', 'middle');
+            checkbox1Label.setAttribute('dominant-baseline', 'central');
+            checkbox1Label.setAttribute('font-size', '10');
+            checkbox1Label.setAttribute('font-weight', 'bold');
+            checkbox1Label.setAttribute('fill', '#333');
+            checkbox1Label.setAttribute('pointer-events', 'none'); // Don't block clicks
+            checkbox1Label.textContent = pitchClass;
+
             // Small checkbox (left) - positioned 18px to the left of large checkbox
+            const checkbox2Cx = width - rightMargin - 18 - smallRadius / 2;
+            const checkbox2Cy = y;
+
             const checkbox2 = document.createElementNS(svgNS, 'circle');
-            checkbox2.setAttribute('cx', width - rightMargin - 18 - smallRadius / 2);
-            checkbox2.setAttribute('cy', y);
+            checkbox2.setAttribute('cx', checkbox2Cx);
+            checkbox2.setAttribute('cy', checkbox2Cy);
             checkbox2.setAttribute('r', smallRadius);
-            checkbox2.setAttribute('fill', 'white');
+
+            // Apply initial color based on checkbox state
+            const pitchKeySmall = `${pitchClass}-small`;
+            const smallFill = this.checkboxStates[pitchKeySmall]?.selected
+                ? this.checkboxStates[pitchKeySmall].color
+                : 'white';
+            checkbox2.setAttribute('fill', smallFill);
+
             checkbox2.setAttribute('stroke', '#333');
             checkbox2.setAttribute('stroke-width', 1);
             checkbox2.setAttribute('class', 'checkbox-small');
             checkbox2.setAttribute('data-string-index', index);
             checkbox2.setAttribute('data-checkbox-type', 'small');
             checkbox2.style.cursor = 'pointer';
+
+            // Small checkbox label
+            const checkbox2Label = document.createElementNS(svgNS, 'text');
+            checkbox2Label.setAttribute('x', checkbox2Cx);
+            checkbox2Label.setAttribute('y', checkbox2Cy);
+            checkbox2Label.setAttribute('text-anchor', 'middle');
+            checkbox2Label.setAttribute('dominant-baseline', 'central');
+            checkbox2Label.setAttribute('font-size', '7');
+            checkbox2Label.setAttribute('font-weight', 'bold');
+            checkbox2Label.setAttribute('fill', '#333');
+            checkbox2Label.setAttribute('pointer-events', 'none'); // Don't block clicks
+            checkbox2Label.textContent = pitchClass;
 
             // Add click handlers
             const toggleCheckbox = (clickedIndex, type) => {
@@ -647,6 +791,8 @@ class DanTranhTuner {
             this.elements.stringsGroup.appendChild(freqDisplay);
             this.elements.stringsGroup.appendChild(checkbox1);
             this.elements.stringsGroup.appendChild(checkbox2);
+            this.elements.stringsGroup.appendChild(checkbox1Label);
+            this.elements.stringsGroup.appendChild(checkbox2Label);
 
             // Initialize spectrogram data
             this.spectrogramData[index] = [];

@@ -21,7 +21,10 @@ const mimeTypes = {
 const server = http.createServer((req, res) => {
     console.log(`${req.method} ${req.url}`);
 
-    let filePath = '.' + req.url;
+    // Strip query parameters from URL
+    const urlWithoutQuery = req.url.split('?')[0];
+
+    let filePath = '.' + urlWithoutQuery;
     if (filePath === './') {
         filePath = './index.html';
     }
@@ -39,14 +42,22 @@ const server = http.createServer((req, res) => {
                 res.end(`Server Error: ${error.code}`, 'utf-8');
             }
         } else {
+            // Add cache control headers to prevent caching during development
+            const headers = {
+                'Content-Type': contentType,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            };
+
             // Inject version into HTML
             if (filePath === './index.html') {
                 let html = content.toString();
                 html = html.replace('{{VERSION}}', VERSION);
-                res.writeHead(200, { 'Content-Type': contentType });
+                res.writeHead(200, headers);
                 res.end(html, 'utf-8');
             } else {
-                res.writeHead(200, { 'Content-Type': contentType });
+                res.writeHead(200, headers);
                 res.end(content, 'utf-8');
             }
         }
