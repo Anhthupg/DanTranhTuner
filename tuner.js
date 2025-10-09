@@ -172,6 +172,8 @@ class DanTranhTuner {
         this.elements = {
             numStrings: document.getElementById('numStrings'),
             tuningPreset: document.getElementById('tuningPreset'),
+            startingNote: document.getElementById('startingNote'),
+            startingNoteGroup: document.getElementById('startingNoteGroup'),
             baseFreq: document.getElementById('baseFreq'),
             generateBtn: document.getElementById('generateStrings'),
             startBtn: document.getElementById('startBtn'),
@@ -188,6 +190,7 @@ class DanTranhTuner {
         this.elements.generateBtn.addEventListener('click', () => this.generateStrings());
         this.elements.startBtn.addEventListener('click', () => this.toggleListening());
         this.elements.tuningPreset.addEventListener('change', () => this.handlePresetChange());
+        this.elements.startingNote.addEventListener('change', () => this.generateStrings());
         this.elements.baseFreq.addEventListener('change', () => this.updateBaseFrequency());
     }
 
@@ -204,6 +207,8 @@ class DanTranhTuner {
                 this.elements.numStrings.value = presetData.strings.length;
             }
         }
+
+        this.generateStrings();
     }
 
     generateCustomTuningInputs() {
@@ -244,30 +249,80 @@ class DanTranhTuner {
                 this.strings.push(this.parseNoteWithCents(tuning));
             }
         } else {
-            // Use preset - but respect numStrings for adjustable presets
+            // Use preset - but respect numStrings and starting note for adjustable presets
             const presetData = TUNING_PRESETS[preset];
             if (presetData) {
-                // If user changed number of strings, adjust the preset
-                const baseStrings = presetData.strings.map(note => this.parseNoteWithCents(note));
+                // Get starting note if available
+                const startingNote = this.elements.startingNote?.value;
+
+                // Transpose the preset based on starting note
+                let baseStrings;
+                if (startingNote && startingNote !== 'C3') {
+                    baseStrings = this.transposePreset(presetData.strings, startingNote);
+                } else {
+                    baseStrings = presetData.strings.map(note => this.parseNoteWithCents(note));
+                }
 
                 if (numStrings <= baseStrings.length) {
                     this.strings = baseStrings.slice(0, numStrings);
                 } else {
-                    // Extend the pattern if user wants more strings
-                    this.strings = [...baseStrings];
-                    const lastNote = baseStrings[baseStrings.length - 1];
-                    const lastMidi = this.noteMap.cache[lastNote.note]?.midi || 60;
+                    // Extend the pattern if user wants more strings - continue pentatonic cycle
+                    if (startingNote && startingNote !== 'C3') {
+                        // Re-generate with the full length needed
+                        this.strings = this.transposePreset(
+                            Array(numStrings).fill('C3'), // Create dummy array of correct length
+                            startingNote
+                        );
+                    } else {
+                        // Continue the default C-D-E-G-A pattern
+                        const pentatonicNotes = ['C', 'D', 'E', 'G', 'A'];
+                        this.strings = [...baseStrings];
 
-                    for (let i = baseStrings.length; i < numStrings; i++) {
-                        const nextMidi = lastMidi + (i - baseStrings.length + 1) * 2; // Whole step increments
-                        const nextNote = this.midiToNote(nextMidi);
-                        this.strings.push(this.parseNoteWithCents(nextNote));
+                        for (let i = baseStrings.length; i < numStrings; i++) {
+                            const noteIndex = i % pentatonicNotes.length;
+                            const note = pentatonicNotes[noteIndex];
+                            const octave = 3 + Math.floor(i / pentatonicNotes.length);
+                            this.strings.push(this.parseNoteWithCents(`${note}${octave}`));
+                        }
                     }
                 }
             }
         }
 
         this.renderStrings();
+    }
+
+    transposePreset(presetNotes, newStartNote) {
+        // Pentatonic scale: C, D, E, G, A (repeating in each octave)
+        const pentatonicNotes = ['C', 'D', 'E', 'G', 'A'];
+
+        // Parse the starting note to get root note and octave
+        const startNoteMatch = newStartNote.match(/([A-G][#b]?)(\d)/);
+        if (!startNoteMatch) return presetNotes.map(n => this.parseNoteWithCents(n));
+
+        const rootNote = startNoteMatch[1];
+        let currentOctave = parseInt(startNoteMatch[2]);
+
+        // Find where to start in the pentatonic cycle
+        const startIndex = pentatonicNotes.indexOf(rootNote);
+        if (startIndex === -1) return presetNotes.map(n => this.parseNoteWithCents(n));
+
+        // Generate string notes by cycling through the pentatonic scale
+        const result = [];
+        for (let i = 0; i < presetNotes.length; i++) {
+            const noteIndex = (startIndex + i) % pentatonicNotes.length;
+            const currentNote = pentatonicNotes[noteIndex];
+
+            // Increment octave when we cycle back to C
+            if (i > 0 && noteIndex === 0) {
+                currentOctave++;
+            }
+
+            const noteString = `${currentNote}${currentOctave}`;
+            result.push(this.parseNoteWithCents(noteString));
+        }
+
+        return result;
     }
 
     parseNoteWithCents(noteString) {
