@@ -198,6 +198,9 @@ class DanTranhTuner {
         this.attackLabels = {}; // { stringIndex: [label elements] }
         this.wasDetecting = {}; // { stringIndex: boolean } - track if we were detecting signal
 
+        // Checkbox state tracking
+        this.checkboxStates = {}; // { "stringIndex-large": boolean, "stringIndex-small": boolean }
+
         this.initializeElements();
         this.attachEventListeners();
         this.generateStrings();
@@ -468,6 +471,46 @@ class DanTranhTuner {
             freqDisplay.setAttribute('paint-order', 'stroke fill');
             freqDisplay.textContent = `${stringData.frequency.toFixed(2)} Hz`;
 
+            // Add two sets of checkboxes (circles) next to frequency display
+            const smallRadius = 5;
+            const largeRadius = 8;
+
+            // Large checkbox (right) - positioned with right edge at right margin
+            const checkbox1 = document.createElementNS(svgNS, 'circle');
+            checkbox1.setAttribute('cx', width - rightMargin - largeRadius / 2);
+            checkbox1.setAttribute('cy', y);
+            checkbox1.setAttribute('r', largeRadius);
+            checkbox1.setAttribute('fill', 'white');
+            checkbox1.setAttribute('stroke', '#333');
+            checkbox1.setAttribute('stroke-width', 1.5);
+            checkbox1.setAttribute('class', 'checkbox-large');
+            checkbox1.setAttribute('data-string-index', index);
+            checkbox1.setAttribute('data-checkbox-type', 'large');
+            checkbox1.style.cursor = 'pointer';
+
+            // Small checkbox (left) - positioned 18px to the left of large checkbox
+            const checkbox2 = document.createElementNS(svgNS, 'circle');
+            checkbox2.setAttribute('cx', width - rightMargin - 18 - smallRadius / 2);
+            checkbox2.setAttribute('cy', y);
+            checkbox2.setAttribute('r', smallRadius);
+            checkbox2.setAttribute('fill', 'white');
+            checkbox2.setAttribute('stroke', '#333');
+            checkbox2.setAttribute('stroke-width', 1);
+            checkbox2.setAttribute('class', 'checkbox-small');
+            checkbox2.setAttribute('data-string-index', index);
+            checkbox2.setAttribute('data-checkbox-type', 'small');
+            checkbox2.style.cursor = 'pointer';
+
+            // Add click handlers
+            const toggleCheckbox = (checkbox, stringIndex, type) => {
+                const key = `${stringIndex}-${type}`;
+                this.checkboxStates[key] = !this.checkboxStates[key];
+                checkbox.setAttribute('fill', this.checkboxStates[key] ? '#333' : 'white');
+            };
+
+            checkbox1.addEventListener('click', () => toggleCheckbox(checkbox1, index, 'large'));
+            checkbox2.addEventListener('click', () => toggleCheckbox(checkbox2, index, 'small'));
+
             // Add full-width spectrogram
             const spectrogramWidth = width - leftMargin - rightMargin;
             const spectrogramHeight = 30;
@@ -500,6 +543,8 @@ class DanTranhTuner {
             this.elements.stringsGroup.appendChild(line);
             this.elements.stringsGroup.appendChild(label);
             this.elements.stringsGroup.appendChild(freqDisplay);
+            this.elements.stringsGroup.appendChild(checkbox1);
+            this.elements.stringsGroup.appendChild(checkbox2);
 
             // Initialize spectrogram data
             this.spectrogramData[index] = [];
