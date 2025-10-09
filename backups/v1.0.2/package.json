@@ -1,0 +1,11 @@
+{
+  "name": "dan-tranh-tuner",
+  "version": "0.1.7",
+  "description": "Vietnamese Zither Tuner with Microtonal Monitoring",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "MAML",
+  "license": "MIT"
+}
