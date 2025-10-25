@@ -154,7 +154,7 @@ class NoteFrequencyMap {
 class DanTranhTuner {
     constructor() {
         // Version tracking for debugging
-        this.version = '1.0.9';
+        this.version = '1.1.0';
         console.log(`%cĐàn Tranh Tuner v${this.version}`, 'color: #008ECC; font-weight: bold; font-size: 16px;');
 
         this.audioContext = null;
@@ -250,6 +250,7 @@ class DanTranhTuner {
             baseFreq: document.getElementById('baseFreq'),
             generateBtn: document.getElementById('generateStrings'),
             startBtn: document.getElementById('startBtn'),
+            eraseBtn: document.getElementById('eraseBtn'),
             stopSoundBtn: document.getElementById('stopSoundBtn'),
             customSection: document.getElementById('customTuningSection'),
             stringConfigs: document.getElementById('stringConfigs'),
@@ -263,6 +264,7 @@ class DanTranhTuner {
     attachEventListeners() {
         this.elements.generateBtn.addEventListener('click', () => this.generateStrings());
         this.elements.startBtn.addEventListener('click', () => this.toggleListening());
+        this.elements.eraseBtn.addEventListener('click', () => this.eraseAllDrawings());
         this.elements.stopSoundBtn.addEventListener('click', () => this.stopAllSounds());
         this.elements.tuningPreset.addEventListener('change', () => this.handlePresetChange());
         this.elements.startingNote.addEventListener('change', () => this.generateStrings());
@@ -993,30 +995,26 @@ class DanTranhTuner {
 
         if (this.wasDetecting && !isDetecting) {
             // Drawing just stopped - add label now
-            console.log(`🛑 DRAWING STOPPED!`);
+            console.log(`🛑 SOUND STOPPED - Adding label`);
 
             if (this.lastActiveString !== undefined) {
                 const stringIndex = this.lastActiveString;
                 const currentDataLength = this.spectrogramData[stringIndex]?.length || 0;
-                const segmentStart = this.currentAttackStart[stringIndex];
                 const segmentColor = this.currentAttackColor[stringIndex];
 
-                console.log(`📍 Adding label to string ${stringIndex}, data length: ${currentDataLength}, segment start: ${segmentStart}`);
+                console.log(`📍 Adding label to string ${stringIndex}, data length: ${currentDataLength}`);
 
                 // Add label at the END of the drawing
-                if (segmentStart !== undefined && this.spectrogramData[stringIndex] && currentDataLength > 0) {
+                if (this.spectrogramData[stringIndex] && currentDataLength > 0) {
                     const data = this.spectrogramData[stringIndex];
                     const endIndex = data.length - 1;
 
-                    if (endIndex >= segmentStart && data[endIndex]) {
+                    if (data[endIndex]) {
                         const segmentFreq = data[endIndex];
-                        console.log(`📍 Adding label at index: ${endIndex}, color: ${segmentColor}`);
+                        console.log(`📍 Creating label at index: ${endIndex}, color: ${segmentColor}`);
                         this.addPitchLabel(stringIndex, endIndex, segmentFreq, segmentColor !== undefined ? segmentColor : this.currentColor);
-                    } else {
-                        console.log(`⏩ Skipping label: no valid segment data`);
+                        console.log(`✅ Label created! Total labels on string ${stringIndex}: ${this.attackLabels[stringIndex].length}`);
                     }
-                } else {
-                    console.log(`⏭️ No segment to label`);
                 }
             }
         }
@@ -1093,26 +1091,20 @@ class DanTranhTuner {
             if (this.newAttackStringIndex === null) {
                 this.newAttackStringIndex = stringIndex;
 
-                // Clear data for this string and nearby strings (within ±2 semitones)
+                // Clear drawing data for nearby strings
                 const targetFreq = this.strings[stringIndex].frequency;
                 this.strings.forEach((str, idx) => {
                     const centsDiff = Math.abs(this.noteMap.getCentsOffset(str.frequency, targetFreq));
                     // Clear if within ±200 cents (2 semitones)
                     if (centsDiff < 200) {
                         this.spectrogramData[idx] = [];
-
-                        // Clear all labels for this string
-                        if (this.attackLabels[idx]) {
-                            this.attackLabels[idx].forEach(label => {
-                                if (label.bg) label.bg.remove();
-                                if (label.text) label.text.remove();
-                            });
-                            this.attackLabels[idx] = [];
-                        }
                     }
                 });
 
                 console.log(`⚡ New attack! String ${stringIndex}, cleared nearby strings, color: ${this.currentColor}`);
+
+                // FADE all existing labels when new attack happens
+                this.fadeAllLabelsOnNewAttack();
             }
 
             // Mark new segment start (always at 0 now)
@@ -1256,10 +1248,52 @@ class DanTranhTuner {
         this.elements.stringsGroup.appendChild(labelBg);
         this.elements.stringsGroup.appendChild(label);
 
-        // Store both elements for cleanup
-        this.attackLabels[stringIndex].push({ bg: labelBg, text: label });
+        // Store both elements for cleanup (start at full opacity)
+        this.attackLabels[stringIndex].push({
+            bg: labelBg,
+            text: label,
+            age: 0  // Track age: 0=newest, 1=one attack old, etc.
+        });
 
         console.log(`Label added: ${pitchDisplay} at position ${x.toFixed(0)}, color: ${labelColor}`);
+    }
+
+    fadeAllLabelsOnNewAttack() {
+        // When new attack happens, age all existing labels and apply fading
+        // Opacity values: newest=100%, 2nd=75%, 3rd=50%, 4th=25%, 5th+=remove
+        const opacityLevels = [1.0, 0.75, 0.5, 0.25];
+
+        console.log(`🎨 NEW ATTACK - Fading all existing labels`);
+
+        // Go through all strings
+        this.strings.forEach((_, stringIndex) => {
+            const labels = this.attackLabels[stringIndex];
+            if (!labels || labels.length === 0) return;
+
+            // Age all labels by 1 (they're all getting older)
+            for (let i = labels.length - 1; i >= 0; i--) {
+                const labelObj = labels[i];
+                labelObj.age += 1;  // Increment age
+
+                if (labelObj.age >= opacityLevels.length) {
+                    // Remove labels that are too old (age 4+)
+                    console.log(`   🗑️ Removing old label on string ${stringIndex} (age ${labelObj.age})`);
+                    if (labelObj.bg) labelObj.bg.remove();
+                    if (labelObj.text) labelObj.text.remove();
+                    labels.splice(i, 1);
+                } else {
+                    // Apply opacity based on age
+                    const opacity = opacityLevels[labelObj.age];
+                    console.log(`   String ${stringIndex}: age ${labelObj.age} → opacity ${opacity}`);
+                    if (labelObj.bg) {
+                        labelObj.bg.setAttribute('opacity', (0.9 * opacity).toString());
+                    }
+                    if (labelObj.text) {
+                        labelObj.text.setAttribute('opacity', opacity.toString());
+                    }
+                }
+            }
+        });
     }
 
     updateStringIndicators(activeIndex, centsDiff) {
@@ -1415,6 +1449,42 @@ class DanTranhTuner {
             this.elements.stopSoundBtn.style.display = 'none';
             console.log('Sound stopped');
         }
+    }
+
+    eraseAllDrawings() {
+        console.log('🧹 Erasing all drawings and labels');
+
+        // Clear all spectrogram data
+        this.spectrogramData = {};
+
+        // Remove all labels from DOM and clear arrays
+        this.strings.forEach((_, stringIndex) => {
+            // Clear spectrogram lines
+            const spectrogramLine = document.getElementById(`spectrogram-${stringIndex}`);
+            if (spectrogramLine) {
+                spectrogramLine.setAttribute('points', '');
+            }
+
+            // Remove all labels
+            if (this.attackLabels[stringIndex]) {
+                this.attackLabels[stringIndex].forEach(labelObj => {
+                    if (labelObj.bg) labelObj.bg.remove();
+                    if (labelObj.text) labelObj.text.remove();
+                });
+                this.attackLabels[stringIndex] = [];
+            }
+
+            // Reset attack tracking
+            this.currentAttackStart[stringIndex] = undefined;
+            this.currentAttackColor[stringIndex] = undefined;
+        });
+
+        // Reset other state
+        this.lastActiveString = undefined;
+        this.frequencyHistory = [];
+        this.resetDisplays();
+
+        console.log('✅ All drawings and labels erased');
     }
 }
 
