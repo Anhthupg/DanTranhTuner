@@ -154,7 +154,7 @@ class NoteFrequencyMap {
 class DanTranhTuner {
     constructor() {
         // Version tracking for debugging
-        this.version = '1.1.0';
+        this.version = '1.1.1';
         console.log(`%cĐàn Tranh Tuner v${this.version}`, 'color: #008ECC; font-weight: bold; font-size: 16px;');
 
         this.audioContext = null;
