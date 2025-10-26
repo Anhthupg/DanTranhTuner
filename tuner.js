@@ -868,7 +868,7 @@ class DanTranhTuner {
             this.yinDetector = new YINDetector(this.audioContext.sampleRate, 2048);
 
             this.isListening = true;
-            this.elements.startBtn.textContent = 'Stop Listening';
+            this.elements.startBtn.textContent = window.languageSwitcher?.t('btn-stop-listening') || 'Stop Listening';
             this.elements.startBtn.classList.add('listening');
 
             // Start detection loop
@@ -900,7 +900,7 @@ class DanTranhTuner {
             this.audioContext.close();
         }
 
-        this.elements.startBtn.textContent = 'Start Listening';
+        this.elements.startBtn.textContent = window.languageSwitcher?.t('btn-start-listening') || 'Start Listening';
         this.elements.startBtn.classList.remove('listening');
 
         // Reset displays

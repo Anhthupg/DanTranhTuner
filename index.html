@@ -29,6 +29,39 @@
             gap: 15px;
             padding: 15px;
             border-bottom: 1px solid #ddd;
+            position: relative;
+        }
+
+        .language-switcher {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            background: #e0e0e0;
+            border-color: #008ECC;
+        }
+
+        .lang-btn.active {
+            background: #008ECC;
+            color: white;
+            border-color: #008ECC;
         }
 
         .logo {
@@ -317,19 +350,28 @@
         <header>
             <img src="assets/maml-logo.png" alt="MAML Logo" class="logo">
             <div class="header-text">
-                <h1>Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.1.0</span></h1>
-                <p class="subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
+                <h1 data-i18n="app-title">Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.1.0</span></h1>
+                <p class="subtitle" data-i18n="app-subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
+            </div>
+            <div class="language-switcher">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="vi">VI</button>
+                <button class="lang-btn" data-lang="zh">中文</button>
+                <button class="lang-btn" data-lang="es">ES</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+                <button class="lang-btn" data-lang="ja">日本語</button>
+                <button class="lang-btn" data-lang="ko">한국어</button>
             </div>
         </header>
 
         <div class="controls">
             <div class="control-row">
                 <div class="control-group">
-                    <label for="numStrings">Strings:</label>
+                    <label for="numStrings" data-i18n="label-strings">Strings:</label>
                     <input type="number" id="numStrings" min="1" max="30" value="17">
                 </div>
                 <div class="control-group">
-                    <label for="tuningPreset">Tuning:</label>
+                    <label for="tuningPreset" data-i18n="label-tuning">Tuning:</label>
                     <select id="tuningPreset">
                         <optgroup label="Standard Presets">
                             <option value="standard16">Standard 16-String (Bắc)</option>
@@ -383,7 +425,7 @@
                     </select>
                 </div>
                 <div class="control-group" id="startingNoteGroup">
-                    <label for="startingNote">Start:</label>
+                    <label for="startingNote" data-i18n="label-start">Start:</label>
                     <select id="startingNote">
                         <option value="C2">C2</option>
                         <option value="Db2">Db2</option>
@@ -413,13 +455,13 @@
                     </select>
                 </div>
                 <div class="control-group">
-                    <label for="baseFreq">A4:</label>
+                    <label for="baseFreq" data-i18n="label-a4">A4:</label>
                     <input type="number" id="baseFreq" min="400" max="460" value="440" step="0.1">
                 </div>
-                <button id="generateStrings">Generate</button>
-                <button id="startBtn">Start Listening</button>
-                <button id="eraseBtn" style="background: #f39c12;">Erase</button>
-                <button id="stopSoundBtn" style="background: #e74c3c; display: none;">Stop Sound</button>
+                <button id="generateStrings" data-i18n="btn-generate">Generate</button>
+                <button id="startBtn" data-i18n="btn-start-listening">Start Listening</button>
+                <button id="eraseBtn" style="background: #f39c12;" data-i18n="btn-erase">Erase</button>
+                <button id="stopSoundBtn" style="background: #e74c3c; display: none;" data-i18n="btn-stop-sound">Stop Sound</button>
                 <div style="margin-left: auto; display: flex; gap: 15px; align-items: center;">
                     <span style="font-weight: 600; font-size: 16px;" id="detectedPitch">--</span>
                     <span style="font-weight: 600; font-size: 14px; color: #666;" id="detectedFreq">-- Hz</span>
@@ -450,11 +492,12 @@
         </div>
 
         <footer style="text-align: center; padding: 20px; font-size: 12px; color: #666; border-top: 1px solid #ddd; margin-top: 20px;">
-            <p style="margin: 5px 0;">© 2025 Manhattan Academy of Music and Language. All Rights Reserved.</p>
-            <p style="margin: 5px 0; font-size: 11px;">Created by Phan Gia Anh Thư | Contributors: Ngô Thanh Nhàn and Đàn Tranh students</p>
+            <p style="margin: 5px 0;" data-i18n="footer-copyright">© 2025 Manhattan Academy of Music and Language. All Rights Reserved.</p>
+            <p style="margin: 5px 0; font-size: 11px;" data-i18n="footer-credits">Created by Phan Gia Anh Thư | Contributors: Ngô Thanh Nhàn and Đàn Tranh students</p>
         </footer>
     </div>
 
+    <script src="translations.js?v=1.1.0"></script>
     <script src="yin.js?v=1.1.0"></script>
     <script src="tuner.js?v=1.1.0"></script>
 </body>
