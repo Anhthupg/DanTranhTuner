@@ -58,6 +58,9 @@ class NotationConverter {
             btn.classList.toggle('active', btn.dataset.notation === notation);
         });
 
+        // Update all dropdown options
+        this.updateDropdownOptions();
+
         // Trigger regeneration of strings to update all displays
         if (window.tuner) {
             window.tuner.generateStrings();
@@ -121,6 +124,81 @@ class NotationConverter {
     // Check if current notation is solfège
     isSolfege() {
         return this.currentNotation === 'solfege';
+    }
+
+    // Update all dropdown option text with current notation
+    updateDropdownOptions() {
+        const tuningSelect = document.getElementById('tuningPreset');
+        const startingNoteSelect = document.getElementById('startingNote');
+
+        if (tuningSelect) {
+            // Update tuning preset options
+            tuningSelect.querySelectorAll('option').forEach(option => {
+                // Store original text if not already stored
+                if (!option.dataset.originalText) {
+                    option.dataset.originalText = option.textContent;
+                }
+
+                // Convert the text
+                const originalText = option.dataset.originalText;
+                const convertedText = this.convertTextWithScales(originalText);
+                option.textContent = convertedText;
+            });
+        }
+
+        if (startingNoteSelect) {
+            // Update starting note options
+            startingNoteSelect.querySelectorAll('option').forEach(option => {
+                // Store original value if not already stored
+                if (!option.dataset.originalText) {
+                    option.dataset.originalText = option.textContent;
+                }
+
+                // Convert the note name
+                const originalValue = option.value;
+                const match = originalValue.match(/^([A-G][#b]?)(\d)$/);
+                if (match) {
+                    const [, noteName, octave] = match;
+                    const convertedNote = this.convertNoteName(noteName);
+                    option.textContent = convertedNote + octave;
+                }
+            });
+        }
+    }
+
+    // Convert text that contains scale patterns (e.g., "Bắc (Northern) - C-D-E-G-A")
+    convertTextWithScales(text) {
+        if (!text) return text;
+
+        // Find all note patterns in the text (single notes or scale patterns)
+        // Pattern matches things like "C-D-E-G-A" or standalone notes
+        const scalePattern = /([A-G][#b]?(?:-[A-G][#b]?)+)/g;
+        const singleNotePattern = /\b([A-G][#b]?)(?=\s|$|\))/g;
+
+        let result = text;
+
+        // First convert scale patterns (e.g., "C-D-E-G-A")
+        result = result.replace(scalePattern, (match) => {
+            return this.convertScale(match);
+        });
+
+        // Then convert any remaining single notes
+        result = result.replace(singleNotePattern, (match, noteName) => {
+            // Don't convert if it's already been converted (part of a scale)
+            if (this.currentNotation === 'solfege') {
+                // Check if this might already be solfège
+                if (match.match(/^(Do|Re|Mi|Fa|Sol|La|Si)/)) {
+                    return match;
+                }
+                return this.convertNoteName(noteName);
+            } else {
+                // Converting back to letter
+                const capitalizedNote = noteName.charAt(0).toUpperCase() + noteName.slice(1).toLowerCase();
+                return this.solfegeToLetter[capitalizedNote] || noteName;
+            }
+        });
+
+        return result;
     }
 }
 
