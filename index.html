@@ -64,6 +64,42 @@
             border-color: #008ECC;
         }
 
+        .notation-toggle {
+            position: absolute;
+            top: 50px;
+            right: 15px;
+            display: flex;
+            gap: 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .notation-btn {
+            background: #f5f5f5;
+            color: #333;
+            border: none;
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 1px solid #ddd;
+        }
+
+        .notation-btn:last-child {
+            border-right: none;
+        }
+
+        .notation-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .notation-btn.active {
+            background: #27ae60;
+            color: white;
+        }
+
         .logo {
             width: 60px;
             height: 60px;
@@ -372,6 +408,10 @@
                 <button class="lang-btn" data-lang="ja">日本語</button>
                 <button class="lang-btn" data-lang="ko">한국어</button>
             </div>
+            <div class="notation-toggle">
+                <button class="notation-btn active" data-notation="letter">A B C</button>
+                <button class="notation-btn" data-notation="solfege">Do Re Mi</button>
+            </div>
         </header>
 
         <div class="controls">
@@ -507,6 +547,7 @@
         </footer>
     </div>
 
+    <script src="notation.js?v=1.1.0"></script>
     <script src="translations.js?v=1.1.0"></script>
     <script src="yin.js?v=1.1.0"></script>
     <script src="tuner.js?v=1.1.0"></script>

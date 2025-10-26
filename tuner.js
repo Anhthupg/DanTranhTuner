@@ -620,9 +620,12 @@ class DanTranhTuner {
             label.setAttribute('stroke', 'white');
             label.setAttribute('stroke-width', '0.8');
             label.setAttribute('paint-order', 'stroke fill');
+
+            // Apply notation conversion
+            const displayNote = window.notationConverter ? window.notationConverter.convert(stringData.note) : stringData.note;
             const labelText = stringData.cents !== 0
-                ? `${index + 1}: ${stringData.note}${stringData.cents > 0 ? '+' : ''}${stringData.cents}`
-                : `${index + 1}: ${stringData.note}`;
+                ? `${index + 1}: ${displayNote}${stringData.cents > 0 ? '+' : ''}${stringData.cents}`
+                : `${index + 1}: ${displayNote}`;
             label.textContent = labelText;
             label.style.cursor = 'pointer';
 
@@ -1046,7 +1049,9 @@ class DanTranhTuner {
             const centsOffset = this.noteMap.getCentsOffset(frequency, closestNote.frequency);
 
             // Format pitch display: "C4+7" or "C4-12" or "C4" if within ±1 cent
-            let pitchDisplay = closestNote.name;
+            // Apply notation conversion
+            const displayNoteName = window.notationConverter ? window.notationConverter.convert(closestNote.name) : closestNote.name;
+            let pitchDisplay = displayNoteName;
             if (Math.abs(centsOffset) >= 1) {
                 const centsRounded = Math.round(centsOffset);
                 pitchDisplay += (centsRounded >= 0 ? '+' : '') + centsRounded;
@@ -1189,8 +1194,9 @@ class DanTranhTuner {
         // Calculate cents offset
         const centsOffset = this.noteMap.getCentsOffset(freq, closestNote.frequency);
 
-        // Format pitch display
-        let pitchDisplay = closestNote.name;
+        // Format pitch display with notation conversion
+        const displayNoteName = window.notationConverter ? window.notationConverter.convert(closestNote.name) : closestNote.name;
+        let pitchDisplay = displayNoteName;
         if (Math.abs(centsOffset) >= 1) {
             const centsRounded = Math.round(centsOffset);
             pitchDisplay += (centsRounded >= 0 ? '+' : '') + centsRounded;
