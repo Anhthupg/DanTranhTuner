@@ -6,6 +6,12 @@
   "scripts": {
     "start": "node server.js"
   },
-  "author": "MAML",
-  "license": "MIT"
+  "author": "Phan Gia Anh Thư",
+  "contributors": [
+    "Ngô Thanh Nhàn",
+    "Đàn Tranh students who provided valuable feedback"
+  ],
+  "copyright": "Copyright (c) 2025 Manhattan Academy of Music and Language. All Rights Reserved.",
+  "license": "UNLICENSED",
+  "private": true
 }
