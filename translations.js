@@ -275,7 +275,7 @@ class LanguageSwitcher {
             }
         });
 
-        console.log(`Language switched to: ${lang}`);
+        console.log(`Language switched to: ${this.currentLang}`);
     }
 
     t(key) {
