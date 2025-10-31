@@ -154,7 +154,7 @@ class NoteFrequencyMap {
 class DanTranhTuner {
     constructor() {
         // Version tracking for debugging
-        this.version = '1.1.2';
+        this.version = '1.1.1';
         console.log(`%cĐàn Tranh Tuner v${this.version}`, 'color: #008ECC; font-weight: bold; font-size: 16px;');
 
         this.audioContext = null;
@@ -244,10 +244,7 @@ class DanTranhTuner {
     initializeElements() {
         this.elements = {
             numStrings: document.getElementById('numStrings'),
-            tuningPreset: document.getElementById('tuningPreset'), // Legacy - may be null
-            tuningSystemSelect: document.getElementById('tuningSystemSelect'),
-            scalePatternSelect: document.getElementById('scalePatternSelect'),
-            targetPresetSelect: document.getElementById('targetPresetSelect'),
+            tuningPreset: document.getElementById('tuningPreset'),
             startingNote: document.getElementById('startingNote'),
             startingNoteGroup: document.getElementById('startingNoteGroup'),
             baseFreq: document.getElementById('baseFreq'),
@@ -262,34 +259,6 @@ class DanTranhTuner {
             detectedPitch: document.getElementById('detectedPitch'),
             detectedFreq: document.getElementById('detectedFreq')
         };
-
-        // Initialize the new tuning system state
-        this.tuningState = {
-            tuningSystem: '12-edo',
-            scalePattern: 'major-pent',
-            targetPreset: 'dan-tranh-5-major',
-            centOffsets: [],  // Array of cent offsets for each scale degree
-            customPitches: []  // Array of selected pitch class indices for custom mode
-        };
-
-        // Get microtonal control elements
-        this.microtoneElements = {
-            section: document.getElementById('microtoneSection'),
-            controls: document.getElementById('microtoneControls'),
-            showBtn: document.getElementById('showMicrotoneBtn'),
-            toggleBtn: document.getElementById('toggleMicrotone'),
-            resetBtn: document.getElementById('resetMicrotone')
-        };
-
-        // Get custom pitch selection elements
-        this.customPitchElements = {
-            section: document.getElementById('customPitchSection'),
-            checkboxContainer: document.getElementById('pitchClassCheckboxes'),
-            selectAllBtn: document.getElementById('selectAllPitches'),
-            clearAllBtn: document.getElementById('clearAllPitches'),
-            hideBtn: document.getElementById('hideCustomPitch'),
-            countDisplay: document.getElementById('selectedPitchCount')
-        };
     }
 
     attachEventListeners() {
@@ -297,23 +266,7 @@ class DanTranhTuner {
         this.elements.startBtn.addEventListener('click', () => this.toggleListening());
         this.elements.eraseBtn.addEventListener('click', () => this.eraseAllDrawings());
         this.elements.stopSoundBtn.addEventListener('click', () => this.stopAllSounds());
-
-        // New hierarchical tuning system event listeners
-        if (this.elements.tuningSystemSelect) {
-            this.elements.tuningSystemSelect.addEventListener('change', () => this.handleTuningSystemChange());
-        }
-        if (this.elements.scalePatternSelect) {
-            this.elements.scalePatternSelect.addEventListener('change', () => this.handleScalePatternChange());
-        }
-        if (this.elements.targetPresetSelect) {
-            this.elements.targetPresetSelect.addEventListener('change', () => this.handleTargetPresetChange());
-        }
-
-        // Legacy support for old tuning preset
-        if (this.elements.tuningPreset) {
-            this.elements.tuningPreset.addEventListener('change', () => this.handlePresetChange());
-        }
-
+        this.elements.tuningPreset.addEventListener('change', () => this.handlePresetChange());
         this.elements.startingNote.addEventListener('change', () => this.generateStrings());
         this.elements.baseFreq.addEventListener('change', () => this.updateBaseFrequency());
 
@@ -324,32 +277,6 @@ class DanTranhTuner {
                 this.stopAllSounds();
             }
         });
-
-        // Initialize dropdowns with proper cascading
-        this.updateScalePatternDropdown();
-        this.updateTargetPresetDropdown();
-
-        // Microtonal adjustment event listeners
-        if (this.microtoneElements.showBtn) {
-            this.microtoneElements.showBtn.addEventListener('click', () => this.showMicrotoneSection());
-        }
-        if (this.microtoneElements.toggleBtn) {
-            this.microtoneElements.toggleBtn.addEventListener('click', () => this.toggleMicrotoneSection());
-        }
-        if (this.microtoneElements.resetBtn) {
-            this.microtoneElements.resetBtn.addEventListener('click', () => this.resetMicrotoneAdjustments());
-        }
-
-        // Custom pitch selection event listeners
-        if (this.customPitchElements.selectAllBtn) {
-            this.customPitchElements.selectAllBtn.addEventListener('click', () => this.selectAllPitches());
-        }
-        if (this.customPitchElements.clearAllBtn) {
-            this.customPitchElements.clearAllBtn.addEventListener('click', () => this.clearAllPitches());
-        }
-        if (this.customPitchElements.hideBtn) {
-            this.customPitchElements.hideBtn.addEventListener('click', () => this.hideCustomPitchSection());
-        }
     }
 
     handlePresetChange() {
@@ -368,549 +295,6 @@ class DanTranhTuner {
 
         this.generateStrings();
     }
-
-    // ========== NEW HIERARCHICAL TUNING SYSTEM HANDLERS ==========
-
-    handleTuningSystemChange() {
-        this.tuningState.tuningSystem = this.elements.tuningSystemSelect.value;
-        console.log(`🎵 Tuning System changed to: ${this.tuningState.tuningSystem}`);
-
-        // Reset cent offsets when tuning system changes
-        this.tuningState.centOffsets = [];
-
-        // Reset custom pitches when tuning system changes
-        this.tuningState.customPitches = [];
-
-        // Update Scale Pattern dropdown to show only compatible scales
-        this.updateScalePatternDropdown();
-
-        // Update Target Preset dropdown
-        this.updateTargetPresetDropdown();
-
-        // Update microtone controls if visible
-        if (this.microtoneElements.section && this.microtoneElements.section.style.display !== 'none') {
-            this.updateMicrotoneControls();
-        }
-
-        // Update custom pitch checkboxes if in custom mode
-        if (this.tuningState.targetPreset === 'custom' && this.customPitchElements.section.style.display !== 'none') {
-            this.updateCustomPitchCheckboxes();
-        }
-
-        // Regenerate strings
-        this.generateStrings();
-    }
-
-    handleScalePatternChange() {
-        this.tuningState.scalePattern = this.elements.scalePatternSelect.value;
-        console.log(`🎼 Scale Pattern changed to: ${this.tuningState.scalePattern}`);
-
-        // Reset cent offsets when scale changes
-        this.tuningState.centOffsets = [];
-
-        // Reset custom pitches when scale pattern changes
-        this.tuningState.customPitches = [];
-
-        // Update microtone controls if visible
-        if (this.microtoneElements.section && this.microtoneElements.section.style.display !== 'none') {
-            this.updateMicrotoneControls();
-        }
-
-        // Update custom pitch checkboxes if in custom mode
-        if (this.tuningState.targetPreset === 'custom' && this.customPitchElements.section.style.display !== 'none') {
-            this.updateCustomPitchCheckboxes();
-        }
-
-        // Update Target Preset dropdown to show compatible presets
-        this.updateTargetPresetDropdown();
-
-        // Regenerate strings
-        this.generateStrings();
-    }
-
-    handleTargetPresetChange() {
-        this.tuningState.targetPreset = this.elements.targetPresetSelect.value;
-        console.log(`🎯 Target Preset changed to: ${this.tuningState.targetPreset}`);
-
-        // Check if custom mode
-        if (this.tuningState.targetPreset === 'custom') {
-            // Show custom pitch selection section
-            if (this.customPitchElements.section) {
-                this.customPitchElements.section.style.display = 'block';
-                this.updateCustomPitchCheckboxes();
-            }
-        } else {
-            // Hide custom pitch selection section
-            if (this.customPitchElements.section) {
-                this.customPitchElements.section.style.display = 'none';
-            }
-
-            // Apply preset configuration
-            const preset = TARGET_SCALE_PRESETS[this.tuningState.targetPreset];
-            if (preset) {
-                // Update dropdown selections to match preset
-                if (preset.l2 !== this.tuningState.tuningSystem) {
-                    this.tuningState.tuningSystem = preset.l2;
-                    this.elements.tuningSystemSelect.value = preset.l2;
-                    this.updateScalePatternDropdown();
-                }
-
-                if (preset.l3 !== this.tuningState.scalePattern) {
-                    this.tuningState.scalePattern = preset.l3;
-                    this.elements.scalePatternSelect.value = preset.l3;
-                }
-
-                // Update number of strings and starting note
-                if (preset.defaultStrings) {
-                    this.elements.numStrings.value = preset.defaultStrings;
-                }
-                if (preset.defaultStart) {
-                    this.elements.startingNote.value = preset.defaultStart;
-                }
-            }
-        }
-
-        // Regenerate strings
-        this.generateStrings();
-    }
-
-    updateScalePatternDropdown() {
-        if (!this.elements.scalePatternSelect) return;
-
-        const tuningSystem = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-        if (!tuningSystem) return;
-
-        const divisions = tuningSystem.divisions;
-        const dropdown = this.elements.scalePatternSelect;
-
-        // Clear existing options
-        dropdown.innerHTML = '';
-
-        // Get available scales for this tuning
-        const availableScales = getAvailableScalesForTuning(this.tuningState.tuningSystem);
-
-        if (availableScales.length === 0) {
-            const option = document.createElement('option');
-            option.value = 'chromatic';
-            option.textContent = 'Chromatic (All Degrees)';
-            dropdown.appendChild(option);
-            this.tuningState.scalePattern = 'chromatic';
-            return;
-        }
-
-        // Add available scales
-        let selectedFound = false;
-        availableScales.forEach(scale => {
-            const option = document.createElement('option');
-            option.value = scale.id;
-            option.textContent = `${scale.name}${scale.noteCount ? ' (' + scale.noteCount + ')' : ''}`;
-
-            if (scale.id === this.tuningState.scalePattern) {
-                option.selected = true;
-                selectedFound = true;
-            }
-
-            dropdown.appendChild(option);
-        });
-
-        // If current selection is not available, select first option
-        if (!selectedFound && availableScales.length > 0) {
-            this.tuningState.scalePattern = availableScales[0].id;
-            dropdown.value = availableScales[0].id;
-        }
-    }
-
-    updateTargetPresetDropdown() {
-        if (!this.elements.targetPresetSelect) return;
-
-        const dropdown = this.elements.targetPresetSelect;
-        const previousPreset = this.tuningState.targetPreset;
-
-        // Clear existing options
-        dropdown.innerHTML = '';
-
-        // Get available presets for current tuning system and scale pattern
-        const availablePresets = getAvailablePresetsForScale(
-            this.tuningState.tuningSystem,
-            this.tuningState.scalePattern
-        );
-
-        // Add available presets
-        let selectedFound = false;
-        availablePresets.forEach(preset => {
-            const option = document.createElement('option');
-            option.value = preset.id;
-            option.textContent = preset.name;
-
-            if (preset.id === this.tuningState.targetPreset) {
-                option.selected = true;
-                selectedFound = true;
-            }
-
-            dropdown.appendChild(option);
-        });
-
-        // If current selection is not available, select first option or custom
-        if (!selectedFound) {
-            if (availablePresets.length > 0) {
-                this.tuningState.targetPreset = availablePresets[0].id;
-                dropdown.value = availablePresets[0].id;
-            } else {
-                this.tuningState.targetPreset = 'custom';
-                dropdown.value = 'custom';
-            }
-
-            // If preset changed to custom, show the custom pitch section
-            if (this.tuningState.targetPreset === 'custom' && previousPreset !== 'custom') {
-                if (this.customPitchElements.section) {
-                    this.customPitchElements.section.style.display = 'block';
-                    this.updateCustomPitchCheckboxes();
-                }
-            } else if (this.tuningState.targetPreset !== 'custom' && previousPreset === 'custom') {
-                // Hide custom section if switching away from custom
-                if (this.customPitchElements.section) {
-                    this.customPitchElements.section.style.display = 'none';
-                }
-            }
-        }
-    }
-
-    // ========== MICROTONAL ADJUSTMENT HANDLERS ==========
-
-    showMicrotoneSection() {
-        if (this.microtoneElements.section) {
-            this.microtoneElements.section.style.display = 'block';
-            this.microtoneElements.showBtn.style.display = 'none';
-            this.updateMicrotoneControls();
-        }
-    }
-
-    toggleMicrotoneSection() {
-        if (this.microtoneElements.section) {
-            this.microtoneElements.section.style.display = 'none';
-            this.microtoneElements.showBtn.style.display = 'block';
-        }
-    }
-
-    resetMicrotoneAdjustments() {
-        // Reset all cent offsets to 0
-        this.tuningState.centOffsets = this.tuningState.centOffsets.map(() => 0);
-
-        // Update all slider and number input values in the UI
-        this.tuningState.centOffsets.forEach((value, index) => {
-            const slider = document.getElementById(`cent-${index}`);
-            const numInput = document.getElementById(`cent-num-${index}`);
-            if (slider) slider.value = 0;
-            if (numInput) numInput.value = 0;
-        });
-
-        // Regenerate strings with reset values
-        this.generateStrings();
-    }
-
-    updateMicrotoneControls() {
-        if (!this.microtoneElements.controls) return;
-
-        const scale = SCALE_DATABASE[this.tuningState.scalePattern];
-        const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-
-        if (!scale || !tuning) return;
-
-        const degrees = scale.degrees[tuning.divisions];
-        if (!degrees) return;
-
-        // Clear existing controls
-        this.microtoneElements.controls.innerHTML = '';
-
-        // Initialize cent offsets array if needed
-        if (this.tuningState.centOffsets.length !== degrees.length) {
-            this.tuningState.centOffsets = new Array(degrees.length).fill(0);
-        }
-
-        // Create controls for each scale degree
-        const centsPerDivision = 1200 / tuning.divisions;
-        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-        degrees.forEach((degreeValue, index) => {
-            // Get degree number and built-in cent offset (handle both simple numbers and objects)
-            let degree, degreeCentOffset;
-            if (typeof degreeValue === 'object') {
-                degree = degreeValue.degree;
-                degreeCentOffset = degreeValue.cents || 0;
-            } else {
-                degree = degreeValue;
-                degreeCentOffset = 0;
-            }
-
-            // Calculate total cents for this degree (base + built-in offset)
-            const baseCents = degree * centsPerDivision;
-            const totalCents = baseCents + degreeCentOffset;
-
-            // Calculate the closest 12-EDO note
-            const totalSemitones = totalCents / 100;
-            const closestSemitone = Math.round(totalSemitones);
-            const centDeviation = Math.round(totalCents - (closestSemitone * 100));
-
-            const noteName = noteNames[closestSemitone % 12];
-
-            // Build label: show degree, note name, and cent offset
-            let degreeName;
-            if (centDeviation !== 0) {
-                // Show cent deviation if not exactly on a 12-EDO note
-                const sign = centDeviation >= 0 ? '+' : '';
-                degreeName = `${degree}° ${noteName}${sign}${centDeviation}`;
-            } else {
-                // Exactly on a 12-EDO note
-                degreeName = `${degree}° ${noteName}`;
-            }
-
-            const controlDiv = document.createElement('div');
-            controlDiv.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
-
-            controlDiv.innerHTML = `
-                <label style="font-size: 11px; font-weight: 600; color: #555;">${degreeName}</label>
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <input type="range"
-                           id="cent-${index}"
-                           min="-50"
-                           max="50"
-                           value="${this.tuningState.centOffsets[index] || 0}"
-                           step="1"
-                           style="flex: 1;">
-                    <input type="number"
-                           id="cent-num-${index}"
-                           min="-50"
-                           max="50"
-                           value="${this.tuningState.centOffsets[index] || 0}"
-                           step="1"
-                           style="width: 50px; padding: 3px; font-size: 11px; text-align: center; border: 1px solid #ccc; border-radius: 3px;">
-                </div>
-            `;
-
-            this.microtoneElements.controls.appendChild(controlDiv);
-
-            // Add event listeners for this control
-            const slider = controlDiv.querySelector(`#cent-${index}`);
-            const numInput = controlDiv.querySelector(`#cent-num-${index}`);
-
-            slider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                numInput.value = value;
-                this.tuningState.centOffsets[index] = value;
-                this.generateStrings();
-            });
-
-            numInput.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value) || 0;
-                slider.value = value;
-                this.tuningState.centOffsets[index] = value;
-                this.generateStrings();
-            });
-        });
-    }
-
-    // ========== CUSTOM PITCH SELECTION HANDLERS ==========
-
-    updateCustomPitchCheckboxes() {
-        if (!this.customPitchElements.checkboxContainer) return;
-
-        const scale = SCALE_DATABASE[this.tuningState.scalePattern];
-        const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-
-        if (!scale || !tuning) return;
-
-        const degrees = scale.degrees[tuning.divisions];
-        if (!degrees) return;
-
-        // Clear existing checkboxes
-        this.customPitchElements.checkboxContainer.innerHTML = '';
-
-        // Initialize custom pitches if empty (select all by default)
-        if (this.tuningState.customPitches.length === 0) {
-            this.tuningState.customPitches = degrees.map((_, i) => i);
-        }
-
-        const centsPerDivision = 1200 / tuning.divisions;
-        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-        // Create checkbox for each degree in the scale
-        degrees.forEach((degreeValue, index) => {
-            let degree, degreeCentOffset;
-            if (typeof degreeValue === 'object') {
-                degree = degreeValue.degree;
-                degreeCentOffset = degreeValue.cents || 0;
-            } else {
-                degree = degreeValue;
-                degreeCentOffset = 0;
-            }
-
-            // Calculate total cents for this degree
-            const baseCents = degree * centsPerDivision;
-            const totalCents = baseCents + degreeCentOffset;
-
-            // Calculate the closest 12-EDO note
-            const totalSemitones = totalCents / 100;
-            const closestSemitone = Math.round(totalSemitones);
-            const centDeviation = Math.round(totalCents - (closestSemitone * 100));
-
-            const noteName = noteNames[closestSemitone % 12];
-
-            // Build label: show degree, note name, and cent offset
-            let degreeName;
-            if (centDeviation !== 0) {
-                // Show cent deviation if not exactly on a 12-EDO note
-                const sign = centDeviation >= 0 ? '+' : '';
-                degreeName = `${degree}° ${noteName}${sign}${centDeviation}`;
-            } else {
-                // Exactly on a 12-EDO note
-                degreeName = `${degree}° ${noteName}`;
-            }
-
-            const checkboxDiv = document.createElement('div');
-            checkboxDiv.style.cssText = 'display: flex; align-items: center; gap: 4px;';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `pitch-${index}`;
-            checkbox.checked = this.tuningState.customPitches.includes(index);
-            checkbox.style.cssText = 'cursor: pointer;';
-
-            const label = document.createElement('label');
-            label.htmlFor = `pitch-${index}`;
-            label.textContent = degreeName;
-            label.style.cssText = 'font-size: 11px; cursor: pointer; user-select: none;';
-
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    if (!this.tuningState.customPitches.includes(index)) {
-                        this.tuningState.customPitches.push(index);
-                        this.tuningState.customPitches.sort((a, b) => a - b);
-                    }
-                } else {
-                    this.tuningState.customPitches = this.tuningState.customPitches.filter(i => i !== index);
-                }
-                this.updatePitchCount();
-                this.generateStrings();
-            });
-
-            checkboxDiv.appendChild(checkbox);
-            checkboxDiv.appendChild(label);
-            this.customPitchElements.checkboxContainer.appendChild(checkboxDiv);
-        });
-
-        this.updatePitchCount();
-    }
-
-    selectAllPitches() {
-        const scale = SCALE_DATABASE[this.tuningState.scalePattern];
-        const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-        if (!scale || !tuning) return;
-
-        const degrees = scale.degrees[tuning.divisions];
-        if (!degrees) return;
-
-        // Select all pitches
-        this.tuningState.customPitches = degrees.map((_, i) => i);
-
-        // Update all checkboxes
-        degrees.forEach((_, index) => {
-            const checkbox = document.getElementById(`pitch-${index}`);
-            if (checkbox) checkbox.checked = true;
-        });
-
-        this.updatePitchCount();
-        this.generateStrings();
-    }
-
-    clearAllPitches() {
-        // Clear all selections
-        this.tuningState.customPitches = [];
-
-        // Uncheck all checkboxes
-        const checkboxes = this.customPitchElements.checkboxContainer.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(cb => cb.checked = false);
-
-        this.updatePitchCount();
-        this.generateStrings();
-    }
-
-    updatePitchCount() {
-        if (this.customPitchElements.countDisplay) {
-            this.customPitchElements.countDisplay.textContent = this.tuningState.customPitches.length;
-        }
-    }
-
-    hideCustomPitchSection() {
-        if (this.customPitchElements.section) {
-            this.customPitchElements.section.style.display = 'none';
-        }
-    }
-
-    generateCustomPitchFrequencies(rootFreq, numStrings) {
-        const scale = SCALE_DATABASE[this.tuningState.scalePattern];
-        const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-
-        if (!scale || !tuning) return [];
-
-        const allDegrees = scale.degrees[tuning.divisions];
-        if (!allDegrees) return [];
-
-        // Filter to only selected pitch indices
-        const selectedDegrees = this.tuningState.customPitches.map(idx => allDegrees[idx]);
-
-        if (selectedDegrees.length === 0) return [];
-
-        const frequencies = [];
-        const centsPerDivision = 1200 / tuning.divisions;
-        let octave = 0;
-        let degreeIndex = 0;
-
-        for (let i = 0; i < numStrings; i++) {
-            const degreeValue = selectedDegrees[degreeIndex];
-
-            // Handle both simple numbers and {degree, cents} objects
-            let degree, degreeCentOffset;
-            if (typeof degreeValue === 'object') {
-                degree = degreeValue.degree;
-                degreeCentOffset = degreeValue.cents || 0;
-            } else {
-                degree = degreeValue;
-                degreeCentOffset = 0;
-            }
-
-            // Get user cent offset for this pitch class
-            const originalIndex = this.tuningState.customPitches[degreeIndex];
-            const userCentOffset = (this.tuningState.centOffsets && this.tuningState.centOffsets[originalIndex])
-                ? this.tuningState.centOffsets[originalIndex] : 0;
-
-            const totalDegrees = octave * tuning.divisions + degree;
-            const baseCents = totalDegrees * centsPerDivision;
-            const totalCents = baseCents + degreeCentOffset + userCentOffset;
-            const freq = rootFreq * Math.pow(2, totalCents / 1200);
-
-            frequencies.push({
-                stringIndex: i,
-                frequency: freq,
-                degree: degree,
-                octave: octave,
-                baseCents: baseCents,
-                centOffset: degreeCentOffset + userCentOffset,
-                totalCents: totalCents
-            });
-
-            degreeIndex++;
-            if (degreeIndex >= selectedDegrees.length) {
-                degreeIndex = 0;
-                octave++;
-            }
-        }
-
-        return frequencies;
-    }
-
-    // ========== END MICROTONAL HANDLERS ==========
-
-    // ========== END NEW HANDLERS ==========
 
     generateCustomTuningInputs() {
         const numStrings = parseInt(this.elements.numStrings.value);
@@ -935,20 +319,7 @@ class DanTranhTuner {
 
     generateStrings() {
         const numStrings = parseInt(this.elements.numStrings.value);
-
-        // Check if we're using the new hierarchical tuning system
-        if (this.elements.tuningSystemSelect && this.tuningState) {
-            this.generateStringsFromHierarchicalSystem(numStrings);
-            this.renderStrings();
-            return;
-        }
-
-        // Legacy support for old dropdown system
-        const preset = this.elements.tuningPreset?.value;
-        if (!preset) {
-            this.renderStrings();
-            return;
-        }
+        const preset = this.elements.tuningPreset.value;
 
         this.strings = [];
 
@@ -1008,100 +379,6 @@ class DanTranhTuner {
         }
 
         this.renderStrings();
-    }
-
-    generateStringsFromHierarchicalSystem(numStrings) {
-        // Get starting note
-        const startingNote = this.elements.startingNote?.value || 'C3';
-        const startNoteData = this.noteMap.cache[startingNote];
-        if (!startNoteData) {
-            console.error('Invalid starting note:', startingNote);
-            return;
-        }
-
-        const rootFreq = startNoteData.frequency;
-
-        let frequencies;
-
-        // Check if custom mode with custom pitch selection
-        if (this.tuningState.targetPreset === 'custom') {
-            // Initialize custom pitches if not already done
-            if (this.tuningState.customPitches.length === 0) {
-                const scale = SCALE_DATABASE[this.tuningState.scalePattern];
-                const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-                if (scale && tuning) {
-                    const degrees = scale.degrees[tuning.divisions];
-                    if (degrees) {
-                        // Select all pitches by default
-                        this.tuningState.customPitches = degrees.map((_, i) => i);
-                    }
-                }
-            }
-
-            // Generate frequencies using only selected pitches
-            if (this.tuningState.customPitches.length > 0) {
-                frequencies = this.generateCustomPitchFrequencies(rootFreq, numStrings);
-            } else {
-                // Fallback to regular generation if no pitches selected
-                frequencies = generateScaleFrequencies(
-                    this.tuningState.tuningSystem,
-                    this.tuningState.scalePattern,
-                    rootFreq,
-                    numStrings,
-                    this.tuningState.centOffsets
-                );
-            }
-        } else {
-            // Use the generateScaleFrequencies function from tuning-systems-data.js
-            // Pass cent offsets for microtonal adjustments
-            frequencies = generateScaleFrequencies(
-                this.tuningState.tuningSystem,
-                this.tuningState.scalePattern,
-                rootFreq,
-                numStrings,
-                this.tuningState.centOffsets  // Pass microtonal adjustments
-            );
-        }
-
-        // Convert frequencies to string data format
-        this.strings = frequencies.map((freqData, index) => {
-            // Find closest note name for display
-            const closestNote = this.noteMap.getNoteFromFrequency(freqData.frequency);
-
-            // Build note display
-            let noteDisplay;
-            if (closestNote) {
-                // Calculate deviation from closest 12-EDO note
-                const closestNoteFreq = closestNote.frequency;
-                const centsFromClosest = 1200 * Math.log2(freqData.frequency / closestNoteFreq);
-
-                // For non-12-EDO tunings or when user has microtonal adjustments, show cents
-                const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-                const isNon12EDO = tuning && tuning.divisions !== 12;
-
-                if (Math.abs(centsFromClosest) >= 10 || (freqData.centOffset && Math.abs(freqData.centOffset) >= 1)) {
-                    const sign = centsFromClosest > 0 ? '+' : '';
-                    noteDisplay = `${closestNote.name}${sign}${Math.round(centsFromClosest)}`;
-                } else if (freqData.centOffset && Math.abs(freqData.centOffset) >= 1) {
-                    const sign = freqData.centOffset > 0 ? '+' : '';
-                    noteDisplay = `${closestNote.name}${sign}${Math.round(freqData.centOffset)}`;
-                } else {
-                    noteDisplay = closestNote.name;
-                }
-            } else {
-                noteDisplay = `~${freqData.frequency.toFixed(2)}Hz`;
-            }
-
-            return {
-                note: noteDisplay,
-                frequency: freqData.frequency,
-                cents: freqData.centOffset || 0,
-                totalCents: freqData.totalCents || 0,  // Total cents from root note
-                baseCents: freqData.baseCents || 0,    // Base cents without offsets
-                rawNote: closestNote ? closestNote.note : '?',
-                octave: closestNote ? closestNote.octave : 0
-            };
-        });
     }
 
     generateFromScale(scalePattern, numStrings, startingNote) {
@@ -1287,7 +564,7 @@ class DanTranhTuner {
         this.checkboxColorIndex = 0;
 
         const width = 1200;
-        const leftMargin = 75; // Space for labels (increased for cents display)
+        const leftMargin = 35; // Space for labels
         const rightMargin = 70; // Small margin on the right
 
         // Calculate Y positions based on MIDI semitone spacing
@@ -1355,16 +632,11 @@ class DanTranhTuner {
             label.setAttribute('stroke-width', '0.8');
             label.setAttribute('paint-order', 'stroke fill');
 
-            // Build label: "StringNum: CentsFromRoot¢ NoteName"
-            // For hierarchical tuning system, show total cents from root
-            const centsFromRoot = stringData.totalCents !== undefined
-                ? Math.round(stringData.totalCents)
-                : Math.round(1200 * Math.log2(stringData.frequency / this.strings[0].frequency));
-
-            // Apply notation conversion to note display
+            // Apply notation conversion
             const displayNote = window.notationConverter ? window.notationConverter.convert(stringData.note) : stringData.note;
-
-            const labelText = `${index + 1}: ${centsFromRoot}¢ ${displayNote}`;
+            const labelText = stringData.cents !== 0
+                ? `${index + 1}: ${displayNote}${stringData.cents > 0 ? '+' : ''}${stringData.cents}`
+                : `${index + 1}: ${displayNote}`;
             label.textContent = labelText;
             label.style.cursor = 'pointer';
 
@@ -1544,26 +816,25 @@ class DanTranhTuner {
     }
 
     calculateStringPositions() {
-        // Calculate Y positions based on actual frequency spacing
-        // This ensures proper spacing even for non-12-EDO tunings
+        // Calculate Y positions based on semitone spacing
+        // Each semitone gets equal visual spacing for proportional representation
 
         const margin = 100;
-        const pixelsPerSemitone = 15; // Visual spacing unit
+        const pixelsPerSemitone = 15; // Adjust this for tighter/looser spacing
 
-        if (this.strings.length === 0) return [];
+        // Get MIDI numbers for all strings
+        const midiNumbers = this.strings.map(stringData => {
+            const noteInfo = this.noteMap.cache[stringData.note];
+            return noteInfo ? noteInfo.midi : 60;
+        });
 
-        // Get frequencies and convert to semitones (1 semitone = 100 cents)
-        const lowestFreq = this.strings[0].frequency;
+        // Find the lowest MIDI note (will be at top)
+        const lowestMidi = Math.min(...midiNumbers);
 
-        const positions = this.strings.map((stringData, index) => {
-            // Calculate cents from lowest string
-            const cents = 1200 * Math.log2(stringData.frequency / lowestFreq);
-
-            // Convert cents to semitones (100 cents = 1 semitone)
-            const semitones = cents / 100;
-
-            // Calculate Y position: lower pitch = higher on screen
-            return margin + semitones * pixelsPerSemitone;
+        // Calculate positions - lower pitch = higher on screen (lower Y value)
+        const positions = midiNumbers.map(midi => {
+            const semitoneOffset = midi - lowestMidi;
+            return margin + semitoneOffset * pixelsPerSemitone;
         });
 
         return positions;

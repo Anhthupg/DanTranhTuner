@@ -26,62 +26,61 @@
         header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 15px;
-            border-bottom: 2px solid #27ae60;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
             position: relative;
-            background: white;
         }
 
         .language-switcher {
             position: absolute;
-            top: 8px;
+            top: 15px;
             right: 15px;
             display: flex;
-            gap: 4px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .lang-btn {
-            background: white;
-            color: #000;
+            background: #f5f5f5;
+            color: #333;
             border: 1px solid #ddd;
-            padding: 3px 7px;
-            border-radius: 3px;
-            font-size: 10px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .lang-btn:hover {
-            background: #f5f5f5;
-            border-color: #27ae60;
+            background: #e0e0e0;
+            border-color: #008ECC;
         }
 
         .lang-btn.active {
-            background: #27ae60;
+            background: #008ECC;
             color: white;
-            border-color: #27ae60;
+            border-color: #008ECC;
         }
 
         .notation-toggle {
             position: absolute;
-            top: 33px;
+            top: 50px;
             right: 15px;
             display: flex;
             gap: 0;
             border: 1px solid #ddd;
-            border-radius: 3px;
+            border-radius: 4px;
             overflow: hidden;
         }
 
         .notation-btn {
-            background: white;
-            color: #000;
+            background: #f5f5f5;
+            color: #333;
             border: none;
-            padding: 3px 8px;
-            font-size: 10px;
+            padding: 5px 12px;
+            font-size: 11px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
@@ -93,7 +92,7 @@
         }
 
         .notation-btn:hover {
-            background: #f5f5f5;
+            background: #e0e0e0;
         }
 
         .notation-btn.active {
@@ -102,8 +101,8 @@
         }
 
         .logo {
-            width: 45px;
-            height: 45px;
+            width: 60px;
+            height: 60px;
             flex-shrink: 0;
         }
 
@@ -112,27 +111,24 @@
         }
 
         h1 {
-            font-size: 1.4em;
-            margin: 0;
-            line-height: 1.2;
+            font-size: 1.8em;
         }
 
         .subtitle {
-            font-size: 0.85em;
-            opacity: 0.6;
-            margin: 0;
+            font-size: 1em;
+            opacity: 0.7;
         }
 
         .controls {
-            background: white;
-            padding: 6px 10px;
+            background: #f5f5f5;
+            padding: 10px;
             border-bottom: 1px solid #ddd;
-            color: #000;
+            color: #333;
         }
 
         .control-row {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -140,65 +136,63 @@
         .control-group {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
 
         label {
             font-weight: 500;
-            color: #000;
+            color: #333;
             white-space: nowrap;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         select, input[type="number"] {
-            padding: 3px 5px;
+            padding: 4px 6px;
             border: 1px solid #ddd;
             border-radius: 3px;
-            font-size: 11px;
-            background: white;
+            font-size: 12px;
         }
 
         input[type="number"] {
-            width: 50px;
+            width: 60px;
         }
 
         select {
-            min-width: 120px;
+            min-width: 150px;
         }
 
         optgroup {
             font-weight: bold;
             font-style: normal;
-            color: #27ae60;
+            color: #008ECC;
             background: #f0f8ff;
         }
 
         optgroup option {
             font-weight: normal;
-            color: #000;
+            color: #333;
             background: white;
             padding-left: 10px;
         }
 
         select:focus, input[type="number"]:focus {
             outline: none;
-            border-color: #27ae60;
+            border-color: #008ECC;
         }
 
         button {
-            background: #27ae60;
+            background: #008ECC;
             color: white;
             border: none;
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 3px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
         button:hover {
-            background: #229954;
+            background: #006699;
         }
 
         button:disabled {
@@ -207,27 +201,19 @@
         }
 
         #startBtn.listening {
-            background: #000;
+            background: #e74c3c;
         }
 
         #startBtn.listening:hover {
-            background: #333;
-        }
-
-        #stopSoundBtn {
-            background: #000;
+            background: #c0392b;
         }
 
         #stopSoundBtn:hover {
-            background: #333;
-        }
-
-        #eraseBtn {
-            background: #666;
+            background: #c0392b;
         }
 
         #eraseBtn:hover {
-            background: #888;
+            background: #e67e22;
         }
 
         .tuner-display {
@@ -429,53 +415,63 @@
         </header>
 
         <div class="controls">
-            <div class="control-row" style="margin-bottom: 4px;">
+            <div class="control-row">
                 <div class="control-group">
                     <label for="numStrings" data-i18n="label-strings">Strings:</label>
                     <input type="number" id="numStrings" min="1" max="30" value="17">
                 </div>
                 <div class="control-group">
-                    <label for="tuningSystemSelect" title="Tuning System - How the octave is divided into steps">
-                        Tuning System:
-                    </label>
-                    <select id="tuningSystemSelect">
-                        <option value="12-edo" selected>12-EDO (Standard)</option>
-                        <option value="5-edo">5-EDO (Pentatonic)</option>
-                        <option value="7-edo">7-EDO (Southeast Asian)</option>
-                        <option value="17-edo">17-EDO (Arabic/Turkish)</option>
-                        <option value="19-edo">19-EDO (Meantone)</option>
-                        <option value="22-edo">22-EDO (Superpyth)</option>
-                        <option value="24-edo">24-EDO (Quarter-tone)</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="scalePatternSelect" title="Scale Pattern - Which notes to select from the tuning system">
-                        Scale Pattern:
-                    </label>
-                    <select id="scalePatternSelect">
-                        <option value="major-pent" selected>Major Pentatonic (5)</option>
-                        <option value="minor-pent">Minor Pentatonic (5)</option>
-                        <option value="vietnamese-bac">Vietnamese Bắc (5)</option>
-                        <option value="vietnamese-nam">Vietnamese Nam (5)</option>
-                        <option value="vietnamese-bac-microtone">Vietnamese Bắc (Microtone)</option>
-                        <option value="major">Major Scale (7)</option>
-                        <option value="minor-natural">Minor Scale (7)</option>
-                        <option value="blues">Blues (6)</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="targetPresetSelect" title="Selected Pitches - Pre-configured tunings or custom pitch selection">
-                        Selected Pitches:
-                    </label>
-                    <select id="targetPresetSelect">
-                        <option value="dan-tranh-5-major" selected>Đàn Tranh 5-note (Major)</option>
-                        <option value="dan-tranh-5-minor">Đàn Tranh 5-note (Minor)</option>
-                        <option value="dan-tranh-5-bac">Đàn Tranh Bắc (Northern)</option>
-                        <option value="dan-tranh-5-nam">Đàn Tranh Nam (Southern)</option>
-                        <option value="dan-tranh-microtone">Đàn Tranh Bắc (Microtone)</option>
-                        <option value="dan-tranh-7-major">Đàn Tranh 7-note (Major)</option>
-                        <option value="dan-tranh-7-minor">Đàn Tranh 7-note (Minor)</option>
-                        <option value="custom">Custom Configuration</option>
+                    <label for="tuningPreset" data-i18n="label-tuning">Tuning:</label>
+                    <select id="tuningPreset">
+                        <optgroup label="Standard Presets">
+                            <option value="standard16">Standard 16-String (Bắc)</option>
+                            <option value="standard17" selected>Standard 17-String</option>
+                            <option value="standard21">Standard 21-String</option>
+                        </optgroup>
+                        <optgroup label="Vietnamese Scales (Dây Đàn Tranh)">
+                            <option value="C-D-E-G-A">Bắc (Northern) - C-D-E-G-A</option>
+                            <option value="C-D-F-G-A">Nam (Southern) - C-D-F-G-A</option>
+                            <option value="C-D-E-G-B">Trung (Central) - C-D-E-G-B</option>
+                            <option value="C-Eb-F-G-Bb">Ru Con (Lullaby) - C-Eb-F-G-Bb</option>
+                            <option value="D-F-G-A-C">Nam Ai (Southern Sadness) - D-F-G-A-C</option>
+                            <option value="D-E-F#-A-B">Nam Xuân (Southern Spring) - D-E-F#-A-B</option>
+                            <option value="C-Eb-F-G-Ab">Oán (Lament) - C-Eb-F-G-Ab</option>
+                        </optgroup>
+                        <optgroup label="Chinese Pentatonic (五声音阶)">
+                            <option value="C-D-E-G-A">Gong (宫) - C-D-E-G-A</option>
+                            <option value="D-E-G-A-C">Shang (商) - D-E-G-A-C</option>
+                            <option value="E-G-A-C-D">Jue (角) - E-G-A-C-D</option>
+                            <option value="G-A-C-D-E">Zhi (徵) - G-A-C-D-E</option>
+                            <option value="A-C-D-E-G">Yu (羽) - A-C-D-E-G</option>
+                        </optgroup>
+                        <optgroup label="Japanese Pentatonic (五音音階)">
+                            <option value="C-D-Eb-G-Ab">Hirajoshi - C-D-Eb-G-Ab</option>
+                            <option value="C-Db-F-Gb-Bb">Iwato - C-Db-F-Gb-Bb</option>
+                            <option value="C-Db-F-G-Bb">In-sen - C-Db-F-G-Bb</option>
+                            <option value="C-D-Eb-G-A">Kumoi - C-D-Eb-G-A</option>
+                            <option value="C-D-F-G-A">Ritusen - C-D-F-G-A</option>
+                        </optgroup>
+                        <optgroup label="Other Pentatonic">
+                            <option value="C-D-F-G-Bb">Egyptian - C-D-F-G-Bb</option>
+                        </optgroup>
+                        <optgroup label="Hexatonic (6 notes)">
+                            <option value="C-D-Eb-E-G-A">Blues Major - C-D-Eb-E-G-A</option>
+                            <option value="C-Eb-F-Gb-G-Bb">Blues Minor - C-Eb-F-Gb-G-Bb</option>
+                            <option value="C-D-E-F#-G#-A#">Whole Tone - C-D-E-F#-G#-A#</option>
+                            <option value="C-D#-E-G-Ab-B">Augmented - C-D#-E-G-Ab-B</option>
+                        </optgroup>
+                        <optgroup label="Heptatonic (7 notes / Modes)">
+                            <option value="C-D-E-F-G-A-B">Major (Ionian) - C-D-E-F-G-A-B</option>
+                            <option value="D-E-F-G-A-B-C">Dorian - D-E-F-G-A-B-C</option>
+                            <option value="E-F-G-A-B-C-D">Phrygian - E-F-G-A-B-C-D</option>
+                            <option value="F-G-A-B-C-D-E">Lydian - F-G-A-B-C-D-E</option>
+                            <option value="G-A-B-C-D-E-F">Mixolydian - G-A-B-C-D-E-F</option>
+                            <option value="A-B-C-D-E-F-G">Natural Minor (Aeolian) - A-B-C-D-E-F-G</option>
+                            <option value="A-B-C-D-E-F-G#">Harmonic Minor - A-B-C-D-E-F-G#</option>
+                        </optgroup>
+                        <optgroup label="Custom">
+                            <option value="custom">Custom Tuning</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="control-group" id="startingNoteGroup">
@@ -513,42 +509,13 @@
                     <input type="number" id="baseFreq" min="400" max="460" value="440" step="0.1">
                 </div>
                 <button id="generateStrings" data-i18n="btn-generate">Generate</button>
-                <button id="startBtn" data-i18n="btn-start-listening">Start</button>
-                <button id="eraseBtn" data-i18n="btn-erase">Erase</button>
-                <button id="stopSoundBtn" style="display: none;" data-i18n="btn-stop-sound">Stop</button>
-                <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
-                    <span style="font-weight: 600; font-size: 14px;" id="detectedPitch">--</span>
-                    <span style="font-weight: 600; font-size: 12px; color: #666;" id="detectedFreq">-- Hz</span>
+                <button id="startBtn" data-i18n="btn-start-listening">Start Listening</button>
+                <button id="eraseBtn" style="background: #f39c12;" data-i18n="btn-erase">Erase</button>
+                <button id="stopSoundBtn" style="background: #e74c3c; display: none;" data-i18n="btn-stop-sound">Stop Sound</button>
+                <div style="margin-left: auto; display: flex; gap: 15px; align-items: center;">
+                    <span style="font-weight: 600; font-size: 16px;" id="detectedPitch">--</span>
+                    <span style="font-weight: 600; font-size: 14px; color: #666;" id="detectedFreq">-- Hz</span>
                 </div>
-            </div>
-
-            <!-- Microtonal Adjustment Section -->
-            <div id="microtoneSection" style="display: none; margin-top: 4px; padding: 4px 6px; background: #f9f9f9; border-radius: 3px; border: 1px solid #ddd;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-size: 10px; color: #000;">Microtonal Adjustments</span>
-                    <div style="display: flex; gap: 3px;">
-                        <button id="resetMicrotone" style="padding: 2px 6px; font-size: 9px; background: #27ae60; color: white; border: none; border-radius: 2px; cursor: pointer;">Reset</button>
-                        <button id="toggleMicrotone" style="padding: 2px 6px; font-size: 9px; background: #666; color: white; border: none; border-radius: 2px; cursor: pointer;">Hide</button>
-                    </div>
-                </div>
-                <div id="microtoneControls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 4px; margin-top: 3px;"></div>
-            </div>
-            <div style="text-align: center; margin-top: 6px;">
-                <button id="showMicrotoneBtn" style="padding: 4px 10px; font-size: 10px; background: #666; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                    Microtonal Twist
-                </button>
-            </div>
-
-            <!-- Custom Pitch Class Selection -->
-            <div id="customPitchSection" style="display: none; margin-top: 4px; padding: 4px 6px; background: #f0f8ff; border-radius: 3px; border: 1px solid #27ae60;">
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <span style="font-size: 10px; color: #000;">Custom Pitch Selection</span>
-                    <button id="selectAllPitches" style="padding: 2px 6px; font-size: 9px; background: #27ae60; color: white; border: none; border-radius: 2px; cursor: pointer;">All</button>
-                    <button id="clearAllPitches" style="padding: 2px 6px; font-size: 9px; background: #666; color: white; border: none; border-radius: 2px; cursor: pointer;">Clear</button>
-                    <span style="font-size: 9px; color: #666;"><strong id="selectedPitchCount">0</strong> selected</span>
-                    <button id="hideCustomPitch" style="padding: 2px 6px; font-size: 9px; background: #666; color: white; border: none; border-radius: 2px; cursor: pointer; margin-left: auto;">Hide</button>
-                </div>
-                <div id="pitchClassCheckboxes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 4px; margin-top: 3px;"></div>
             </div>
 
             <div id="customTuningSection" class="custom-tuning" style="display: none; margin-top: 15px;">
@@ -580,10 +547,9 @@
         </footer>
     </div>
 
-    <script src="tuning-systems-data.js?v=2.0.0"></script>
-    <script src="notation.js?v=2.0.0"></script>
-    <script src="translations.js?v=2.0.0"></script>
-    <script src="yin.js?v=2.0.0"></script>
-    <script src="tuner.js?v=2.0.0"></script>
+    <script src="notation.js?v=1.1.1"></script>
+    <script src="translations.js?v=1.1.1"></script>
+    <script src="yin.js?v=1.1.1"></script>
+    <script src="tuner.js?v=1.1.1"></script>
 </body>
 </html>
