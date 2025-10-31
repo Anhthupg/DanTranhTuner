@@ -154,7 +154,7 @@ class NoteFrequencyMap {
 class DanTranhTuner {
     constructor() {
         // Version tracking for debugging
-        this.version = '1.1.2';
+        this.version = '2.0.1';
         console.log(`%cĐàn Tranh Tuner v${this.version}`, 'color: #008ECC; font-weight: bold; font-size: 16px;');
 
         this.audioContext = null;
@@ -248,6 +248,8 @@ class DanTranhTuner {
             tuningSystemSelect: document.getElementById('tuningSystemSelect'),
             scalePatternSelect: document.getElementById('scalePatternSelect'),
             targetPresetSelect: document.getElementById('targetPresetSelect'),
+            rootNote: document.getElementById('rootNote'),
+            rootCentOffset: document.getElementById('rootCentOffset'),
             startingNote: document.getElementById('startingNote'),
             startingNoteGroup: document.getElementById('startingNoteGroup'),
             baseFreq: document.getElementById('baseFreq'),
@@ -314,6 +316,14 @@ class DanTranhTuner {
             this.elements.tuningPreset.addEventListener('change', () => this.handlePresetChange());
         }
 
+        this.elements.rootNote.addEventListener('change', () => {
+            this.updateStartingNoteDropdown();
+            this.generateStrings();
+        });
+        this.elements.rootCentOffset.addEventListener('change', () => {
+            this.updateStartingNoteDropdown();
+            this.generateStrings();
+        });
         this.elements.startingNote.addEventListener('change', () => this.generateStrings());
         this.elements.baseFreq.addEventListener('change', () => this.updateBaseFrequency());
 
@@ -328,6 +338,7 @@ class DanTranhTuner {
         // Initialize dropdowns with proper cascading
         this.updateScalePatternDropdown();
         this.updateTargetPresetDropdown();
+        this.updateStartingNoteDropdown();
 
         // Microtonal adjustment event listeners
         if (this.microtoneElements.showBtn) {
@@ -397,6 +408,9 @@ class DanTranhTuner {
             this.updateCustomPitchCheckboxes();
         }
 
+        // Update starting note dropdown to show only valid notes
+        this.updateStartingNoteDropdown();
+
         // Regenerate strings
         this.generateStrings();
     }
@@ -423,6 +437,9 @@ class DanTranhTuner {
 
         // Update Target Preset dropdown to show compatible presets
         this.updateTargetPresetDropdown();
+
+        // Update starting note dropdown to show only valid notes
+        this.updateStartingNoteDropdown();
 
         // Regenerate strings
         this.generateStrings();
@@ -465,7 +482,9 @@ class DanTranhTuner {
                     this.elements.numStrings.value = preset.defaultStrings;
                 }
                 if (preset.defaultStart) {
-                    this.elements.startingNote.value = preset.defaultStart;
+                    this.elements.rootNote.value = preset.defaultStart;
+                    this.elements.rootCentOffset.value = 0;
+                    this.elements.startingNote.value = 0; // Start on 1st degree by default
                 }
             }
         }
@@ -573,6 +592,123 @@ class DanTranhTuner {
                 }
             }
         }
+    }
+
+    updateStartingNoteDropdown() {
+        if (!this.elements.startingNote || !this.elements.rootNote) return;
+
+        const dropdown = this.elements.startingNote;
+        const currentValue = parseInt(dropdown.value) || 0;
+
+        // Get root note and cent offset
+        const rootNoteName = this.elements.rootNote.value;
+        const rootCentOffset = parseFloat(this.elements.rootCentOffset?.value || 0);
+        const rootNoteData = this.noteMap.cache[rootNoteName];
+
+        if (!rootNoteData) {
+            console.error('Invalid root note:', rootNoteName);
+            return;
+        }
+
+        // Get the current scale's degrees
+        const scale = SCALE_DATABASE[this.tuningState.scalePattern];
+        const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
+
+        if (!scale || !tuning) return;
+
+        // Determine which degrees to use
+        let degreesToUse;
+        if (this.tuningState.targetPreset === 'custom' && this.tuningState.customPitches.length > 0) {
+            // Use custom selected pitches
+            const allDegrees = scale.degrees[tuning.divisions];
+            if (!allDegrees) return;
+            degreesToUse = this.tuningState.customPitches.map(idx => allDegrees[idx]);
+        } else {
+            // Use the full scale pattern
+            degreesToUse = scale.degrees[tuning.divisions];
+        }
+
+        if (!degreesToUse || degreesToUse.length === 0) return;
+
+        // Calculate root frequency with cent offset
+        const rootFreq = rootNoteData.frequency * Math.pow(2, rootCentOffset / 1200);
+        const centsPerDivision = 1200 / tuning.divisions;
+
+        // Generate scale notes (enough for several octaves)
+        const scaleNotes = [];
+        const numOctaves = 4; // Generate 4 octaves worth
+        const totalNotes = degreesToUse.length * numOctaves;
+
+        for (let i = 0; i < totalNotes; i++) {
+            const degreeIndex = i % degreesToUse.length;
+            const octave = Math.floor(i / degreesToUse.length);
+            const degreeValue = degreesToUse[degreeIndex];
+
+            // Handle both simple numbers and {degree, cents} objects
+            let degree, degreeCentOffset;
+            if (typeof degreeValue === 'object') {
+                degree = degreeValue.degree;
+                degreeCentOffset = degreeValue.cents || 0;
+            } else {
+                degree = degreeValue;
+                degreeCentOffset = 0;
+            }
+
+            // Calculate frequency for this note
+            const totalDegrees = octave * tuning.divisions + degree;
+            const baseCents = totalDegrees * centsPerDivision;
+            const totalCents = baseCents + degreeCentOffset;
+            const freq = rootFreq * Math.pow(2, totalCents / 1200);
+
+            // Find closest note name for display
+            const closestNote = this.noteMap.getNoteFromFrequency(freq);
+            let noteDisplay;
+            if (closestNote) {
+                const closestNoteFreq = closestNote.frequency;
+                const centsFromClosest = 1200 * Math.log2(freq / closestNoteFreq);
+
+                if (Math.abs(centsFromClosest) >= 10) {
+                    const sign = centsFromClosest > 0 ? '+' : '';
+                    noteDisplay = `${closestNote.name}${sign}${Math.round(centsFromClosest)}¢`;
+                } else {
+                    noteDisplay = closestNote.name;
+                }
+            } else {
+                noteDisplay = `${freq.toFixed(2)}Hz`;
+            }
+
+            scaleNotes.push({
+                index: i,
+                degreeIndex: degreeIndex,
+                degree: degree,
+                octave: octave,
+                frequency: freq,
+                display: noteDisplay,
+                totalCents: totalCents
+            });
+        }
+
+        // Clear and populate dropdown
+        dropdown.innerHTML = '';
+
+        scaleNotes.forEach(note => {
+            const option = document.createElement('option');
+            option.value = note.index;
+            option.textContent = `${note.index + 1}. ${note.display}`;
+
+            if (note.index === currentValue) {
+                option.selected = true;
+            }
+
+            dropdown.appendChild(option);
+        });
+
+        // If current selection is out of range, select first option
+        if (currentValue >= scaleNotes.length) {
+            dropdown.value = 0;
+        }
+
+        console.log(`✅ Starting note dropdown: ${scaleNotes.length} notes from root ${rootNoteName}${rootCentOffset !== 0 ? (rootCentOffset > 0 ? '+' : '') + rootCentOffset + '¢' : ''}`);
     }
 
     // ========== MICROTONAL ADJUSTMENT HANDLERS ==========
@@ -790,6 +926,7 @@ class DanTranhTuner {
                     this.tuningState.customPitches = this.tuningState.customPitches.filter(i => i !== index);
                 }
                 this.updatePitchCount();
+                this.updateStartingNoteDropdown();
                 this.generateStrings();
             });
 
@@ -819,6 +956,7 @@ class DanTranhTuner {
         });
 
         this.updatePitchCount();
+        this.updateStartingNoteDropdown();
         this.generateStrings();
     }
 
@@ -831,6 +969,7 @@ class DanTranhTuner {
         checkboxes.forEach(cb => cb.checked = false);
 
         this.updatePitchCount();
+        this.updateStartingNoteDropdown();
         this.generateStrings();
     }
 
@@ -1011,15 +1150,23 @@ class DanTranhTuner {
     }
 
     generateStringsFromHierarchicalSystem(numStrings) {
-        // Get starting note
-        const startingNote = this.elements.startingNote?.value || 'C3';
-        const startNoteData = this.noteMap.cache[startingNote];
-        if (!startNoteData) {
-            console.error('Invalid starting note:', startingNote);
+        // Get root note with offset
+        const rootNoteName = this.elements.rootNote?.value || 'E3';
+        const rootCentOffset = parseFloat(this.elements.rootCentOffset?.value || 0);
+        const rootNoteData = this.noteMap.cache[rootNoteName];
+
+        if (!rootNoteData) {
+            console.error('Invalid root note:', rootNoteName);
             return;
         }
 
-        const rootFreq = startNoteData.frequency;
+        // Calculate root frequency with cent offset
+        const rootFreq = rootNoteData.frequency * Math.pow(2, rootCentOffset / 1200);
+
+        // Get starting degree index (which note in the scale to start from)
+        const startingDegreeIndex = parseInt(this.elements.startingNote?.value || 0);
+
+        console.log(`🎵 Generating strings: Root=${rootNoteName}${rootCentOffset ? (rootCentOffset > 0 ? '+' : '') + rootCentOffset + '¢' : ''}, StartDegree=${startingDegreeIndex + 1}`);
 
         let frequencies;
 
@@ -1039,29 +1186,33 @@ class DanTranhTuner {
             }
 
             // Generate frequencies using only selected pitches
+            // Generate extra notes to account for starting degree offset
             if (this.tuningState.customPitches.length > 0) {
-                frequencies = this.generateCustomPitchFrequencies(rootFreq, numStrings);
+                frequencies = this.generateCustomPitchFrequencies(rootFreq, numStrings + startingDegreeIndex);
             } else {
                 // Fallback to regular generation if no pitches selected
                 frequencies = generateScaleFrequencies(
                     this.tuningState.tuningSystem,
                     this.tuningState.scalePattern,
                     rootFreq,
-                    numStrings,
+                    numStrings + startingDegreeIndex,
                     this.tuningState.centOffsets
                 );
             }
         } else {
             // Use the generateScaleFrequencies function from tuning-systems-data.js
-            // Pass cent offsets for microtonal adjustments
+            // Generate extra notes to account for starting degree offset
             frequencies = generateScaleFrequencies(
                 this.tuningState.tuningSystem,
                 this.tuningState.scalePattern,
                 rootFreq,
-                numStrings,
+                numStrings + startingDegreeIndex,
                 this.tuningState.centOffsets  // Pass microtonal adjustments
             );
         }
+
+        // Slice to start from the selected degree
+        frequencies = frequencies.slice(startingDegreeIndex, startingDegreeIndex + numStrings);
 
         // Convert frequencies to string data format
         this.strings = frequencies.map((freqData, index) => {
@@ -1075,16 +1226,16 @@ class DanTranhTuner {
                 const closestNoteFreq = closestNote.frequency;
                 const centsFromClosest = 1200 * Math.log2(freqData.frequency / closestNoteFreq);
 
-                // For non-12-EDO tunings or when user has microtonal adjustments, show cents
-                const tuning = TUNING_SYSTEMS[this.tuningState.tuningSystem];
-                const isNon12EDO = tuning && tuning.divisions !== 12;
-
-                if (Math.abs(centsFromClosest) >= 10 || (freqData.centOffset && Math.abs(freqData.centOffset) >= 1)) {
-                    const sign = centsFromClosest > 0 ? '+' : '';
-                    noteDisplay = `${closestNote.name}${sign}${Math.round(centsFromClosest)}`;
-                } else if (freqData.centOffset && Math.abs(freqData.centOffset) >= 1) {
-                    const sign = freqData.centOffset > 0 ? '+' : '';
-                    noteDisplay = `${closestNote.name}${sign}${Math.round(freqData.centOffset)}`;
+                // Show cents if deviation is significant (>= 1 cent when rounded)
+                // This includes both the scale pattern deviation AND the root cent offset
+                if (Math.abs(centsFromClosest) >= 0.5) {
+                    const roundedCents = Math.round(centsFromClosest);
+                    if (roundedCents !== 0) {
+                        const sign = roundedCents > 0 ? '+' : '';
+                        noteDisplay = `${closestNote.name}${sign}${roundedCents}`;
+                    } else {
+                        noteDisplay = closestNote.name;
+                    }
                 } else {
                     noteDisplay = closestNote.name;
                 }

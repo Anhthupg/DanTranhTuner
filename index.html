@@ -400,7 +400,7 @@
         <header>
             <img src="assets/maml-logo.png" alt="MAML Logo" class="logo">
             <div class="header-text">
-                <h1 data-i18n="app-title">Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.1.1</span></h1>
+                <h1 data-i18n="app-title">Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v2.0.1</span></h1>
                 <p class="subtitle" data-i18n="app-subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
             </div>
             <div class="language-switcher">
@@ -478,9 +478,9 @@
                         <option value="custom">Custom Configuration</option>
                     </select>
                 </div>
-                <div class="control-group" id="startingNoteGroup">
-                    <label for="startingNote" data-i18n="label-start">Start:</label>
-                    <select id="startingNote">
+                <div class="control-group">
+                    <label for="rootNote" title="Root Note - Reference pitch for the scale">Root:</label>
+                    <select id="rootNote">
                         <option value="C2">C2</option>
                         <option value="Db2">Db2</option>
                         <option value="D2">D2</option>
@@ -506,6 +506,16 @@
                         <option value="Bb3">Bb3</option>
                         <option value="B3">B3</option>
                         <option value="C4">C4</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="rootCentOffset" title="Fine-tune root note (cents)">¢:</label>
+                    <input type="number" id="rootCentOffset" min="-50" max="50" value="0" step="1" style="width: 45px;">
+                </div>
+                <div class="control-group" id="startingNoteGroup">
+                    <label for="startingNote" title="Starting Note - Which scale degree to start on" data-i18n="label-start">Start:</label>
+                    <select id="startingNote">
+                        <option value="0">1st note</option>
                     </select>
                 </div>
                 <div class="control-group">
