@@ -317,10 +317,13 @@ class DanTranhTuner {
         }
 
         this.elements.rootNote.addEventListener('change', () => {
+            // Reset to root note (1st degree) when root changes
+            this.elements.startingNote.value = 0;
             this.updateStartingNoteDropdown();
             this.generateStrings();
         });
         this.elements.rootCentOffset.addEventListener('change', () => {
+            // Keep current starting degree when just adjusting cents
             this.updateStartingNoteDropdown();
             this.generateStrings();
         });
@@ -408,6 +411,9 @@ class DanTranhTuner {
             this.updateCustomPitchCheckboxes();
         }
 
+        // Reset to root note (1st degree) when tuning system changes
+        this.elements.startingNote.value = 0;
+
         // Update starting note dropdown to show only valid notes
         this.updateStartingNoteDropdown();
 
@@ -437,6 +443,9 @@ class DanTranhTuner {
 
         // Update Target Preset dropdown to show compatible presets
         this.updateTargetPresetDropdown();
+
+        // Reset to root note (1st degree) when scale pattern changes
+        this.elements.startingNote.value = 0;
 
         // Update starting note dropdown to show only valid notes
         this.updateStartingNoteDropdown();
@@ -926,6 +935,8 @@ class DanTranhTuner {
                     this.tuningState.customPitches = this.tuningState.customPitches.filter(i => i !== index);
                 }
                 this.updatePitchCount();
+                // Reset to root note when pitch selection changes
+                this.elements.startingNote.value = 0;
                 this.updateStartingNoteDropdown();
                 this.generateStrings();
             });
@@ -956,6 +967,8 @@ class DanTranhTuner {
         });
 
         this.updatePitchCount();
+        // Reset to root note when selecting all pitches
+        this.elements.startingNote.value = 0;
         this.updateStartingNoteDropdown();
         this.generateStrings();
     }
@@ -969,6 +982,8 @@ class DanTranhTuner {
         checkboxes.forEach(cb => cb.checked = false);
 
         this.updatePitchCount();
+        // Reset to root note when clearing all pitches
+        this.elements.startingNote.value = 0;
         this.updateStartingNoteDropdown();
         this.generateStrings();
     }
