@@ -154,7 +154,7 @@ class NoteFrequencyMap {
 class DanTranhTuner {
     constructor() {
         // Version tracking for debugging
-        this.version = '2.0.3';
+        this.version = '2.0.2';
         console.log(`%cĐàn Tranh Tuner v${this.version}`, 'color: #008ECC; font-weight: bold; font-size: 16px;');
 
         this.audioContext = null;
@@ -260,6 +260,7 @@ class DanTranhTuner {
             startingNote: document.getElementById('startingNote'),
             startingNoteGroup: document.getElementById('startingNoteGroup'),
             baseFreq: document.getElementById('baseFreq'),
+            generateBtn: document.getElementById('generateStrings'),
             startBtn: document.getElementById('startBtn'),
             eraseBtn: document.getElementById('eraseBtn'),
             stopSoundBtn: document.getElementById('stopSoundBtn'),
@@ -301,12 +302,10 @@ class DanTranhTuner {
     }
 
     attachEventListeners() {
+        this.elements.generateBtn.addEventListener('click', () => this.generateStrings());
         this.elements.startBtn.addEventListener('click', () => this.toggleListening());
         this.elements.eraseBtn.addEventListener('click', () => this.eraseAllDrawings());
         this.elements.stopSoundBtn.addEventListener('click', () => this.stopAllSounds());
-
-        // Auto-update on strings count change
-        this.elements.numStrings.addEventListener('change', () => this.generateStrings());
 
         // New hierarchical tuning system event listeners
         if (this.elements.tuningSystemSelect) {
@@ -341,11 +340,11 @@ class DanTranhTuner {
         this.elements.startingOctave.addEventListener('change', () => this.generateStrings());
         this.elements.lowestNote.addEventListener('change', () => this.generateStrings());
         this.elements.startingNote.addEventListener('change', () => this.generateStrings());
-        this.elements.baseFreq.addEventListener('input', () => this.updateBaseFrequency());
+        this.elements.baseFreq.addEventListener('change', () => this.updateBaseFrequency());
 
-        // Add spacebar listener to stop all sounds
+        // Add spacebar listener to stop sound
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
+            if (e.code === 'Space' && this.toneOscillator) {
                 e.preventDefault(); // Prevent page scroll
                 this.stopAllSounds();
             }
@@ -1720,8 +1719,8 @@ class DanTranhTuner {
             // Apply notation conversion to note display
             const displayNote = window.notationConverter ? window.notationConverter.convert(stringData.note) : stringData.note;
 
-            // Create label with tspan for opacity control
-            label.innerHTML = `${index + 1}: <tspan style="opacity: 0.3;">${centsFromRoot}¢</tspan> ${displayNote}`;
+            const labelText = `${index + 1}: ${centsFromRoot}¢ ${displayNote}`;
+            label.textContent = labelText;
             label.style.cursor = 'pointer';
 
             // Add click handler to label too

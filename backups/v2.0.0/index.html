@@ -26,55 +26,62 @@
         header {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            border-bottom: 1px solid #27ae60;
+            gap: 10px;
+            padding: 8px 15px;
+            border-bottom: 2px solid #27ae60;
             position: relative;
             background: white;
         }
 
         .language-switcher {
             position: absolute;
-            top: 4px;
-            right: 8px;
+            top: 8px;
+            right: 15px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
         }
 
-        .lang-select {
+        .lang-btn {
             background: white;
             color: #000;
-            border: 1px solid #ccc;
-            padding: 2px 3px;
-            border-radius: 2px;
-            font-size: 9px;
+            border: 1px solid #ddd;
+            padding: 3px 7px;
+            border-radius: 3px;
+            font-size: 10px;
             font-weight: 500;
             cursor: pointer;
-            min-width: 50px;
+            transition: all 0.2s;
         }
 
-        .lang-select:hover {
+        .lang-btn:hover {
+            background: #f5f5f5;
             border-color: #27ae60;
         }
 
-        .lang-select:focus {
-            outline: none;
+        .lang-btn.active {
+            background: #27ae60;
+            color: white;
             border-color: #27ae60;
         }
 
         .notation-toggle {
+            position: absolute;
+            top: 33px;
+            right: 15px;
             display: flex;
             gap: 0;
             border: 1px solid #ddd;
-            border-radius: 2px;
+            border-radius: 3px;
             overflow: hidden;
-            height: fit-content;
         }
 
         .notation-btn {
             background: white;
             color: #000;
             border: none;
-            padding: 2px 5px;
-            font-size: 9px;
+            padding: 3px 8px;
+            font-size: 10px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
@@ -95,8 +102,8 @@
         }
 
         .logo {
-            width: 32px;
-            height: 32px;
+            width: 45px;
+            height: 45px;
             flex-shrink: 0;
         }
 
@@ -105,27 +112,27 @@
         }
 
         h1 {
-            font-size: 1.1em;
+            font-size: 1.4em;
             margin: 0;
-            line-height: 1.1;
+            line-height: 1.2;
         }
 
         .subtitle {
-            font-size: 0.75em;
+            font-size: 0.85em;
             opacity: 0.6;
             margin: 0;
         }
 
         .controls {
             background: white;
-            padding: 4px 6px;
+            padding: 6px 10px;
             border-bottom: 1px solid #ddd;
             color: #000;
         }
 
         .control-row {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -133,57 +140,30 @@
         .control-group {
             display: flex;
             align-items: center;
-            gap: 2px;
+            gap: 4px;
         }
 
         label {
             font-weight: 500;
             color: #000;
             white-space: nowrap;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         select, input[type="number"] {
-            padding: 2px 3px;
-            border: 1px solid #ccc;
-            border-radius: 2px;
-            font-size: 10px;
+            padding: 3px 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 11px;
             background: white;
         }
 
         input[type="number"] {
-            width: 45px;
+            width: 50px;
         }
 
         select {
-            min-width: 100px;
-        }
-
-        /* Compact selects for specific controls */
-        #rootNote {
-            min-width: auto;
-            width: 38px;
-            padding: 2px 1px;
-        }
-
-        #rootCentOffset {
-            width: 35px;
-            padding: 2px 2px;
-            text-align: center;
-        }
-
-        #startingOctave {
-            min-width: auto;
-            width: 32px;
-            padding: 2px 1px;
-        }
-
-        #numStrings {
-            width: 35px;
-        }
-
-        #baseFreq {
-            width: 52px;
+            min-width: 120px;
         }
 
         optgroup {
@@ -209,9 +189,9 @@
             background: #27ae60;
             color: white;
             border: none;
-            padding: 2px 6px;
-            border-radius: 2px;
-            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 11px;
             font-weight: 500;
             cursor: pointer;
             transition: background 0.2s;
@@ -253,93 +233,11 @@
         .tuner-display {
             background: #fff;
             overflow-x: auto;
-            position: relative;
         }
 
         .svg-container {
             background: white;
             min-height: 400px;
-        }
-
-        /* Orientation Watermark */
-        .orientation-watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0.2;
-            pointer-events: none;
-            user-select: none;
-            color: #000;
-            text-align: center;
-            font-weight: bold;
-            width: 600px;
-            height: 400px;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
-            animation: floatWatermark 6s ease-in-out infinite;
-        }
-
-        @keyframes floatWatermark {
-            0%, 100% {
-                transform: translate(-50%, -50%) translateY(0px);
-            }
-            50% {
-                transform: translate(-50%, -50%) translateY(-10px);
-            }
-        }
-
-        .orientation-north {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-        }
-
-        .orientation-south {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-        }
-
-        .orientation-west {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            text-align: center;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-        }
-
-        .orientation-east {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            text-align: center;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-        }
-
-        .arrow-up, .arrow-down, .arrow-left, .arrow-right {
-            font-size: 60px;
-            line-height: 1;
-        }
-
-        .label-large {
-            font-size: 40px;
-            line-height: 1;
-            margin: 5px 0;
-        }
-
-        .label-small {
-            font-size: 18px;
-            line-height: 1.2;
-            margin: 3px 0;
-            white-space: nowrap;
         }
 
         svg {
@@ -502,38 +400,36 @@
         <header>
             <img src="assets/maml-logo.png" alt="MAML Logo" class="logo">
             <div class="header-text">
-                <h1 data-i18n="app-title">Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v2.0.3</span></h1>
+                <h1 data-i18n="app-title">Đàn Tranh Tuner <span style="font-size: 0.5em; opacity: 0.7;">v1.1.1</span></h1>
                 <p class="subtitle" data-i18n="app-subtitle">Vietnamese Zither Tuner with Microtonal Monitoring</p>
             </div>
             <div class="language-switcher">
-                <select id="languageSelect" class="lang-select">
-                    <option value="en" selected>EN</option>
-                    <option value="vi">VI</option>
-                    <option value="zh">中文</option>
-                    <option value="es">ES</option>
-                    <option value="fr">FR</option>
-                    <option value="de">DE</option>
-                    <option value="pt">PT</option>
-                    <option value="ru">RU</option>
-                    <option value="ar">AR</option>
-                    <option value="hi">HI</option>
-                    <option value="it">IT</option>
-                    <option value="th">TH</option>
-                    <option value="id">ID</option>
-                    <option value="tr">TR</option>
-                    <option value="pl">PL</option>
-                    <option value="ja">日本語</option>
-                    <option value="ko">한국어</option>
-                </select>
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="vi">VI</button>
+                <button class="lang-btn" data-lang="zh">中文</button>
+                <button class="lang-btn" data-lang="es">ES</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+                <button class="lang-btn" data-lang="de">DE</button>
+                <button class="lang-btn" data-lang="pt">PT</button>
+                <button class="lang-btn" data-lang="ru">RU</button>
+                <button class="lang-btn" data-lang="ar">AR</button>
+                <button class="lang-btn" data-lang="hi">HI</button>
+                <button class="lang-btn" data-lang="it">IT</button>
+                <button class="lang-btn" data-lang="th">TH</button>
+                <button class="lang-btn" data-lang="id">ID</button>
+                <button class="lang-btn" data-lang="tr">TR</button>
+                <button class="lang-btn" data-lang="pl">PL</button>
+                <button class="lang-btn" data-lang="ja">日本語</button>
+                <button class="lang-btn" data-lang="ko">한국어</button>
+            </div>
+            <div class="notation-toggle">
+                <button class="notation-btn active" data-notation="letter">A B C</button>
+                <button class="notation-btn" data-notation="solfege">Do Re Mi</button>
             </div>
         </header>
 
         <div class="controls">
             <div class="control-row" style="margin-bottom: 4px;">
-                <div class="notation-toggle">
-                    <button class="notation-btn active" data-notation="letter">A B C</button>
-                    <button class="notation-btn" data-notation="solfege">Do Re Mi</button>
-                </div>
                 <div class="control-group">
                     <label for="numStrings" data-i18n="label-strings">Strings:</label>
                     <input type="number" id="numStrings" min="1" max="30" value="17">
@@ -568,79 +464,62 @@
                     </select>
                 </div>
                 <div class="control-group">
-                    <label for="rootNote" title="Root Note - Tonal center (pitch class)">Root:</label>
-                    <select id="rootNote">
-                        <option value="C" selected>C</option>
-                        <option value="C#">C#</option>
-                        <option value="D">D</option>
-                        <option value="D#">D#</option>
-                        <option value="E">E</option>
-                        <option value="F">F</option>
-                        <option value="F#">F#</option>
-                        <option value="G">G</option>
-                        <option value="G#">G#</option>
-                        <option value="A">A</option>
-                        <option value="A#">A#</option>
-                        <option value="B">B</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="rootCentOffset" title="Fine-tune root note (cents)">¢:</label>
-                    <input type="number" id="rootCentOffset" min="-50" max="50" value="0" step="1">
-                </div>
-                <div class="control-group">
-                    <label for="targetPresetSelect" title="Custom Pitch Selection - Pre-configured tunings or custom pitch selection">
-                        Custom Pitch Selection:
+                    <label for="targetPresetSelect" title="Selected Pitches - Pre-configured tunings or custom pitch selection">
+                        Selected Pitches:
                     </label>
                     <select id="targetPresetSelect">
-                        <!-- Options are dynamically populated by JavaScript -->
+                        <option value="dan-tranh-5-major" selected>Đàn Tranh 5-note (Major)</option>
+                        <option value="dan-tranh-5-minor">Đàn Tranh 5-note (Minor)</option>
+                        <option value="dan-tranh-5-bac">Đàn Tranh Bắc (Northern)</option>
+                        <option value="dan-tranh-5-nam">Đàn Tranh Nam (Southern)</option>
+                        <option value="dan-tranh-microtone">Đàn Tranh Bắc (Microtone)</option>
+                        <option value="dan-tranh-7-major">Đàn Tranh 7-note (Major)</option>
+                        <option value="dan-tranh-7-minor">Đàn Tranh 7-note (Minor)</option>
+                        <option value="custom">Custom Configuration</option>
                     </select>
                 </div>
-                <div class="control-group" id="startingPitchGroup">
-                    <label for="startingPitch" title="Starting Pitch - First note from scale">Start:</label>
-                    <select id="startingPitch">
-                        <option value="0">1st degree</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="startingOctave" title="Octave for starting pitch">Oct:</label>
-                    <select id="startingOctave">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3" selected>3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
-                <div class="control-group" id="lowestNoteGroup" style="display: none;">
-                    <label for="lowestNote" title="Lowest Note - Starting pitch with octave (legacy)">Lowest:</label>
-                    <select id="lowestNote">
-                        <option value="E3" selected>E3</option>
-                    </select>
-                </div>
-                <div class="control-group" id="startingNoteGroup" style="display: none;">
-                    <label for="startingNote" title="Starting Note - Which scale degree to start on" data-i18n="label-start">Start:</label>
+                <div class="control-group" id="startingNoteGroup">
+                    <label for="startingNote" data-i18n="label-start">Start:</label>
                     <select id="startingNote">
-                        <option value="0">1st note</option>
+                        <option value="C2">C2</option>
+                        <option value="Db2">Db2</option>
+                        <option value="D2">D2</option>
+                        <option value="Eb2">Eb2</option>
+                        <option value="E2">E2</option>
+                        <option value="F2">F2</option>
+                        <option value="F#2">F#2</option>
+                        <option value="G2">G2</option>
+                        <option value="Ab2">Ab2</option>
+                        <option value="A2">A2</option>
+                        <option value="Bb2">Bb2</option>
+                        <option value="B2">B2</option>
+                        <option value="C3">C3</option>
+                        <option value="Db3">Db3</option>
+                        <option value="D3">D3</option>
+                        <option value="Eb3">Eb3</option>
+                        <option value="E3" selected>E3</option>
+                        <option value="F3">F3</option>
+                        <option value="F#3">F#3</option>
+                        <option value="G3">G3</option>
+                        <option value="Ab3">Ab3</option>
+                        <option value="A3">A3</option>
+                        <option value="Bb3">Bb3</option>
+                        <option value="B3">B3</option>
+                        <option value="C4">C4</option>
                     </select>
                 </div>
                 <div class="control-group">
                     <label for="baseFreq" data-i18n="label-a4">A4:</label>
                     <input type="number" id="baseFreq" min="400" max="460" value="440" step="0.1">
                 </div>
-                <button id="showMicrotoneBtn" style="padding: 2px 6px; font-size: 10px; background: #666; color: white; border: none; border-radius: 2px; cursor: pointer;">
-                    Microtonal Twist
-                </button>
-                <div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">
-                    <span style="font-weight: 600; font-size: 11px;" id="detectedPitch">--</span>
-                    <span style="font-weight: 600; font-size: 10px; color: #666;" id="detectedFreq">-- Hz</span>
-                </div>
-            </div>
-            <div class="control-row" style="justify-content: center; margin-top: 2px;">
-                <button id="startBtn" data-i18n="btn-start-listening">Start Listening</button>
+                <button id="generateStrings" data-i18n="btn-generate">Generate</button>
+                <button id="startBtn" data-i18n="btn-start-listening">Start</button>
                 <button id="eraseBtn" data-i18n="btn-erase">Erase</button>
                 <button id="stopSoundBtn" style="display: none;" data-i18n="btn-stop-sound">Stop</button>
+                <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                    <span style="font-weight: 600; font-size: 14px;" id="detectedPitch">--</span>
+                    <span style="font-weight: 600; font-size: 12px; color: #666;" id="detectedFreq">-- Hz</span>
+                </div>
             </div>
 
             <!-- Microtonal Adjustment Section -->
@@ -653,6 +532,11 @@
                     </div>
                 </div>
                 <div id="microtoneControls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 4px; margin-top: 3px;"></div>
+            </div>
+            <div style="text-align: center; margin-top: 6px;">
+                <button id="showMicrotoneBtn" style="padding: 4px 10px; font-size: 10px; background: #666; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                    Microtonal Twist
+                </button>
             </div>
 
             <!-- Custom Pitch Class Selection -->
@@ -688,37 +572,6 @@
                     <g id="stringsGroup"></g>
                 </svg>
             </div>
-
-            <!-- Watermark Orientation Guide -->
-            <div class="orientation-watermark">
-                <!-- North Arrow -->
-                <div class="orientation-north">
-                    <div class="arrow-up">▲</div>
-                    <div class="label-large" data-i18n="watermark-low">LOW</div>
-                    <div class="label-small" data-i18n="watermark-longer-strings">LONGER STRINGS</div>
-                </div>
-
-                <!-- South Arrow -->
-                <div class="orientation-south">
-                    <div class="label-small" data-i18n="watermark-shorter-strings">SHORTER STRINGS</div>
-                    <div class="label-large" data-i18n="watermark-high">HIGH</div>
-                    <div class="arrow-down">▼</div>
-                </div>
-
-                <!-- West Arrow -->
-                <div class="orientation-west">
-                    <div class="arrow-left">◀</div>
-                    <div class="label-large" data-i18n="watermark-low">LOW</div>
-                    <div class="label-small" data-i18n="watermark-swallows-left">MOVABLE SWALLOWS LEFT</div>
-                </div>
-
-                <!-- East Arrow -->
-                <div class="orientation-east">
-                    <div class="label-small" data-i18n="watermark-swallows-right">MOVABLE SWALLOWS RIGHT</div>
-                    <div class="label-large" data-i18n="watermark-high">HIGH</div>
-                    <div class="arrow-right">▶</div>
-                </div>
-            </div>
         </div>
 
         <footer style="text-align: center; padding: 20px; font-size: 12px; color: #666; border-top: 1px solid #ddd; margin-top: 20px;">
@@ -727,10 +580,10 @@
         </footer>
     </div>
 
-    <script src="tuning-systems-data.js?v=2.0.1"></script>
-    <script src="notation.js?v=2.0.1"></script>
-    <script src="translations.js?v=2.0.1"></script>
-    <script src="yin.js?v=2.0.1"></script>
-    <script src="tuner.js?v=2.0.1"></script>
+    <script src="tuning-systems-data.js?v=1.1.2"></script>
+    <script src="notation.js?v=1.1.1"></script>
+    <script src="translations.js?v=1.1.1"></script>
+    <script src="yin.js?v=1.1.1"></script>
+    <script src="tuner.js?v=1.1.2"></script>
 </body>
 </html>

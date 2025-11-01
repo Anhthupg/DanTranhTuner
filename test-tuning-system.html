@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Tuning System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Tuning System Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: Load Tuning Systems Data</h2>
+        <div id="test1"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Get Available Scales for 12-EDO</h2>
+        <div id="test2"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Get Available Presets</h2>
+        <div id="test3"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Generate Scale Frequencies (17 strings, E3 start, 12-EDO, Major Pentatonic)</h2>
+        <div id="test4"></div>
+    </div>
+
+    <script src="tuning-systems-data.js"></script>
+    <script>
+        // Test 1: Check if data structures loaded
+        function test1() {
+            const div = document.getElementById('test1');
+
+            if (typeof TUNING_SYSTEMS === 'undefined') {
+                div.innerHTML = '<span class="error">❌ TUNING_SYSTEMS not loaded</span>';
+                return false;
+            }
+
+            if (typeof SCALE_DATABASE === 'undefined') {
+                div.innerHTML = '<span class="error">❌ SCALE_DATABASE not loaded</span>';
+                return false;
+            }
+
+            if (typeof TARGET_SCALE_PRESETS === 'undefined') {
+                div.innerHTML = '<span class="error">❌ TARGET_SCALE_PRESETS not loaded</span>';
+                return false;
+            }
+
+            div.innerHTML = `
+                <span class="success">✅ All data structures loaded!</span><br>
+                <pre>
+Tuning Systems: ${Object.keys(TUNING_SYSTEMS).length} systems
+- ${Object.keys(TUNING_SYSTEMS).slice(0, 5).join(', ')}...
+
+Scale Database: ${Object.keys(SCALE_DATABASE).length} scales
+- ${Object.keys(SCALE_DATABASE).slice(0, 5).join(', ')}...
+
+Target Presets: ${Object.keys(TARGET_SCALE_PRESETS).length} presets
+- ${Object.keys(TARGET_SCALE_PRESETS).slice(0, 5).join(', ')}...
+                </pre>
+            `;
+            return true;
+        }
+
+        // Test 2: Get available scales
+        function test2() {
+            const div = document.getElementById('test2');
+
+            try {
+                const scales = getAvailableScalesForTuning('12-edo');
+                div.innerHTML = `
+                    <span class="success">✅ Found ${scales.length} scales for 12-EDO</span>
+                    <pre>${JSON.stringify(scales.slice(0, 5).map(s => ({
+                        id: s.id,
+                        name: s.name,
+                        noteCount: s.noteCount
+                    })), null, 2)}</pre>
+                `;
+            } catch (e) {
+                div.innerHTML = `<span class="error">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        // Test 3: Get available presets
+        function test3() {
+            const div = document.getElementById('test3');
+
+            try {
+                const presets = getAvailablePresetsForScale('12-edo', 'major-pent');
+                div.innerHTML = `
+                    <span class="success">✅ Found ${presets.length} presets for 12-EDO + Major Pentatonic</span>
+                    <pre>${JSON.stringify(presets, null, 2)}</pre>
+                `;
+            } catch (e) {
+                div.innerHTML = `<span class="error">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        // Test 4: Generate frequencies
+        function test4() {
+            const div = document.getElementById('test4');
+
+            try {
+                // E3 is approximately 164.81 Hz
+                const rootFreq = 164.81;
+                const frequencies = generateScaleFrequencies('12-edo', 'major-pent', rootFreq, 17);
+
+                div.innerHTML = `
+                    <span class="success">✅ Generated ${frequencies.length} frequencies</span>
+                    <pre>${JSON.stringify(frequencies.slice(0, 8).map(f => ({
+                        string: f.stringIndex + 1,
+                        freq: f.frequency.toFixed(2) + ' Hz',
+                        degree: f.degree,
+                        octave: f.octave
+                    })), null, 2)}</pre>
+                    <small>Showing first 8 of ${frequencies.length} strings...</small>
+                `;
+            } catch (e) {
+                div.innerHTML = `<span class="error">❌ Error: ${e.message}</span><pre>${e.stack}</pre>`;
+            }
+        }
+
+        // Run all tests
+        window.onload = function() {
+            test1();
+            test2();
+            test3();
+            test4();
+        };
+    </script>
+</body>
+</html>
