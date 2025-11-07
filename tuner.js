@@ -154,7 +154,7 @@ class NoteFrequencyMap {
 class DanTranhTuner {
     constructor() {
         // Version tracking for debugging
-        this.version = '2.0.3';
+        this.version = '2.0.4';
         console.log(`%cĐàn Tranh Tuner v${this.version}`, 'color: #008ECC; font-weight: bold; font-size: 16px;');
 
         this.audioContext = null;
@@ -1458,6 +1458,9 @@ class DanTranhTuner {
                 octave: closestNote ? closestNote.octave : 0
             };
         });
+
+        // Debug: Log all string frequencies and notes
+        console.log('📊 String frequencies:', this.strings.map((s, i) => `${i}: ${s.note} (${s.frequency.toFixed(2)} Hz)`).join(', '));
     }
 
     generateFromScale(scalePattern, numStrings, startingNote) {
@@ -1925,6 +1928,20 @@ class DanTranhTuner {
         return positions;
     }
 
+    // Calculate Y position for any frequency (not just strings)
+    calculateYPositionFromFrequency(frequency) {
+        const margin = 100;
+        const pixelsPerSemitone = 15;
+
+        if (this.strings.length === 0) return margin;
+
+        const lowestFreq = this.strings[0].frequency;
+        const cents = 1200 * Math.log2(frequency / lowestFreq);
+        const semitones = cents / 100;
+
+        return margin + semitones * pixelsPerSemitone;
+    }
+
     midiToNote(midiNumber) {
         // Convert MIDI number back to note name
         const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -2110,7 +2127,8 @@ class DanTranhTuner {
 
                     if (data[endIndex]) {
                         const segmentFreq = data[endIndex];
-                        console.log(`📍 Creating label at index: ${endIndex}, color: ${segmentColor}`);
+                        const noteInfo = this.noteMap.getNoteFromFrequency(segmentFreq);
+                        console.log(`📍 Creating label at index: ${endIndex}, freq: ${segmentFreq.toFixed(2)} Hz (${noteInfo?.name}), color: ${segmentColor}`);
                         this.addPitchLabel(stringIndex, endIndex, segmentFreq, segmentColor !== undefined ? segmentColor : this.currentColor);
                         console.log(`✅ Label created! Total labels on string ${stringIndex}: ${this.attackLabels[stringIndex].length}`);
                     }
@@ -2249,18 +2267,10 @@ class DanTranhTuner {
         const spectrogramHeight = 30;
         const spectrogramX = leftMargin;
 
-        // Get string position
-        const stringPositions = this.calculateStringPositions();
-        const stringY = stringPositions[stringIndex];
-
-        // Calculate cent range for Y-axis (±50 cents)
-        const targetFreq = stringData.frequency;
+        // Calculate Y position directly from frequency (not relative to string)
         const points = data.map((freq, i) => {
             const x = spectrogramX + (i / this.spectrogramMaxLength) * spectrogramWidth;
-            const cents = this.noteMap.getCentsOffset(freq, targetFreq);
-            // Map ±50 cents to ±spectrogramHeight/2
-            const yOffset = (cents / 50) * (spectrogramHeight / 2);
-            const y = stringY + yOffset;
+            const y = this.calculateYPositionFromFrequency(freq);
             return `${x},${y}`;
         }).join(' ');
 
@@ -2315,13 +2325,14 @@ class DanTranhTuner {
 
         const x = spectrogramX + (relativePosition / this.spectrogramMaxLength) * spectrogramWidth;
 
+        // Calculate Y position directly from the detected frequency
+        const y = this.calculateYPositionFromFrequency(freq);
+
+        // Debug logging
         const stringPositions = this.calculateStringPositions();
-        const stringY = stringPositions[stringIndex];
-        const stringData = this.strings[stringIndex];
-        const targetFreq = stringData.frequency;
-        const cents = this.noteMap.getCentsOffset(freq, targetFreq);
-        const yOffset = (cents / 50) * 15; // spectrogramHeight/2 = 15
-        const y = stringY + yOffset;
+        const nearbyStrings = this.strings.map((s, i) => `${i}:${s.note}@${stringPositions[i].toFixed(1)}`).join(', ');
+        console.log(`📍 Label Y calc: freq=${freq.toFixed(2)} Hz (${closestNote.name}), y=${y.toFixed(2)}, stringIndex=${stringIndex} (${this.strings[stringIndex]?.note})`);
+        console.log(`📊 String positions: ${nearbyStrings}`);
 
         // Use the same color as the line segment
         const labelColor = this.colors[colorIndex];
